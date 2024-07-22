@@ -6,9 +6,10 @@ all: uefi.img
 .PHONY: run
 run: uefi.img
 	qemu-system-x86_64 -cpu qemu64 \
-		-drive if=pflash,format=raw,readonly=on,file=ovmf/OVMF_CODE.fd \
-		-drive if=pflash,format=raw,file=ovmf/OVMF_VARS.fd \
-		-drive file=uefi.img,if=ide
+		-drive if=pflash,format=raw,readonly=on,file=OVMF/OVMF_CODE.fd \
+		-drive if=pflash,format=raw,file=OVMF/OVMF_VARS.fd \
+		-drive file=uefi.img,if=ide \
+		-net none
 
 main.o: main.c
 	gcc $< \

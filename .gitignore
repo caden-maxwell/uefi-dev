@@ -3,5 +3,5 @@
 *.efi
 *.swp
 *.img
-ovmf
+OVMF
 
