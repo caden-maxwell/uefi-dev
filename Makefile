@@ -1,54 +1,29 @@
-GNU-EFI-HEADERS = gnu-efi/inc
+.PHONY: all clean run
 
-.PHONY: all
 all: uefi.img
 
-.PHONY: run
+rerun: clean run
+
 run: uefi.img
 	qemu-system-x86_64 -cpu qemu64 \
 		-drive if=pflash,format=raw,readonly=on,file=OVMF/OVMF_CODE.fd \
 		-drive if=pflash,format=raw,file=OVMF/OVMF_VARS.fd \
-		-drive file=uefi.img,if=ide \
-		-net none
+		-drive if=ide,format=raw,file=$< \
+		-net none \
 
-main.o: main.c
-	gcc $< \
-		-c \
-		-fno-stack-protector \
-		-fpic \
-		-fshort-wchar \
-		-mno-red-zone \
-		-I $(GNU-EFI-HEADERS) \
-		-I $(GNU-EFI-HEADERS)/x86-64 \
-		-DEFI_FUNCTION_WRAPPER \
-		-o $@
+gnu-efi/.git:
+	git submodule update --init
+	$(MAKE) -C gnu-efi -s
 
-main.so: main.o
-	ld $< \
-		gnu-efi/x86_64/gnuefi/crt0-efi-x86_64.o \
-		-nostdlib \
-		-znocombreloc \
-		-T gnu-efi/gnuefi/elf_x86_64_efi.lds \
-		-shared \
-		-Bsymbolic \
-		-L gnu-efi/x86_64/lib \
-		-L gnu-efi/x86_64/gnuefi \
-		-l:libgnuefi.a \
-		-l:libefi.a \
-		-o $@
+%.efi: %.c gnu-efi/.git
+	sed -i '/^TARGETS =/ s/$$/ $@/' gnu-efi/apps/Makefile
+	
+	cp $< gnu-efi/apps/$<
+	$(MAKE) -C gnu-efi -s
+	cp gnu-efi/x86_64/apps/$@ $@
 
-main.efi: main.so
-	objcopy -j .text \
-		-j .sdata \
-		-j .data \
-		-j .dynamic \
-		-j .dynsym \
-		-j .rel \
-		-j .rela \
-		-j .reloc \
-		--target=efi-app-x86_64 \
-		$< \
-		$@
+	rm -f gnu-efi/apps/$<
+	sed -i '/^TARGETS =/ s/ $@//' gnu-efi/apps/Makefile
 
 uefi.img: main.efi
 	dd if=/dev/zero of=$@ bs=512 count=93750
@@ -60,6 +35,5 @@ uefi.img: main.efi
 	mcopy -i /tmp/part.img $< ::
 	dd if=/tmp/part.img of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
-.PHONY: clean
 clean:
 	rm -f *.o *.so *.efi *.img
