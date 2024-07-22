@@ -1,0 +1,7 @@
+*.o
+*.so
+*.efi
+*.swp
+*.img
+ovmf
+
