@@ -33,7 +33,7 @@ Once you are up and running in the Docker container or have installed the requir
 
 ### `make` or `make all`:
 
-Compiles the UEFI application and generates an image, which is be named `OS.img`.
+Compiles the UEFI application, and generates an image, which is named `OS.img`.
 
 ### `make run`:
 
