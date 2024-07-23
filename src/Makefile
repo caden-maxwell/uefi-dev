@@ -1,6 +1,6 @@
 GNU_EFI := gnu-efi
 TMP_PART := /tmp/part.img
-IMG := uefi.img
+IMG := OS.img
 OVMF_DIR := /usr/share/OVMF
 
 .PHONY: all clean run fresh

@@ -31,32 +31,25 @@ $ ./run_docker.sh
 
 Once you are up and running in the Docker container or have installed the requirements natively, you can run the following commands:
 
-### Create `uefi.img`:
-```bash
-$ make # or
-$ make all
-```
+### `make` or `make all`:
 
-### Start QEMU with UEFI image:
-```bash
-$ make run
-```
+Compiles the UEFI application and generates an image, which is be named `OS.img`.
 
-### Clean up generated files:
-```bash
-$ make clean
-```
-This will remove the following files:
+### `make run`:
+
+Runs the image in QEMU with the required OVMF firmware.
+
+### `make clean`:
+
+Removes all generated files. Files removed include:
 - `*.img`
 - `*.efi`
 - `*.so`
 - `*.o`
 
-### Fresh build:
-```bash
-$ make fresh
-```
-which is equivalent to:
+### `make fresh`:
+
+This makes a fresh build, which is equivalent to running:
 ```bash
 $ make clean
 $ make
