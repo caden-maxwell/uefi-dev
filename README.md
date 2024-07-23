@@ -46,6 +46,11 @@ $ make run
 ```bash
 $ make clean
 ```
+This will remove the following files:
+- `*.img`
+- `*.efi`
+- `*.so`
+- `*.o`
 
 ### Fresh build:
 ```bash
