@@ -3,14 +3,15 @@ GNU_EFI := gnu-efi
 
 IMG := OS.img
 OVMF_SYS_DIR := /usr/share/OVMF
-BOOT_DIR := boot
+BOOTDIR := boot
+BOOT_BIN := $(BOOTDIR)/bin
 OVMF_DIR := OVMF
 
-KERNELSRC := kernel
-OBJDIR := $(KERNELSRC)/lib
-BUILDDIR = $(KERNELSRC)/bin
+KERNDIR := kernel
+KERN_OBJDIR := $(KERNDIR)/lib
+KERN_BUILDDIR = $(KERNDIR)/bin
 
-LDS = $(KERNELSRC)/kernel.ld
+LDS = $(KERNDIR)/kernel.ld
 CC = gcc
 LD = ld
 
@@ -20,13 +21,13 @@ LDFLAGS = -T $(LDS) -static -Bsymbolic -nostdlib
 # Recursive wildcard: https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
-C_FILES = $(call rwildcard,$(KERNELSRC),*.c)          
-OBJS = $(patsubst $(KERNELSRC)/%.c, $(OBJDIR)/%.o, $(C_FILES))
-DIRS = $(wildcard $(KERNELSRC)/*)
+C_FILES = $(call rwildcard,$(KERNDIR),*.c)          
+OBJS = $(patsubst $(KERNDIR)/%.c, $(KERN_OBJDIR)/%.o, $(C_FILES))
+DIRS = $(wildcard $(KERNDIR)/*)
 
 all: $(IMG)
 
-$(OBJDIR)/%.o: $(KERNELSRC)/%.c
+$(KERN_OBJDIR)/%.o: $(KERNDIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $^ -o $@
 
@@ -56,8 +57,9 @@ $(GNU_EFI)/.exists:
 	touch $@
 
 # Build EFI application with GNU EFI
-%.efi: %.c $(GNU_EFI)/.exists
+$(BOOT_BIN)/main.efi: $(BOOTDIR)/main.c $(GNU_EFI)/.exists
 	@echo "Building $@ from $<..."
+	mkdir -p $(@D)
 
 	@# Patch the apps Makefile to build only our target
 	sed -i '/^all:/ s/\$$(TARGETS)/$(notdir $@)/' $(GNU_EFI)/apps/Makefile
@@ -77,7 +79,7 @@ $(GNU_EFI)/.exists:
 	sed -i '/^all:/ s/$(notdir $@)/$$(TARGETS)/' $(GNU_EFI)/apps/Makefile
 
 # Create the image with the EFI application and startup script
-$(IMG): $(BOOT_DIR)/main.efi $(BOOT_DIR)/startup.nsh $(KERNELSRC)/kernel.elf
+$(IMG): $(BOOT_BIN)/main.efi $(BOOTDIR)/startup.nsh $(KERN_BUILDDIR)/kernel.elf
 	@echo "Creating image $@..."
 	dd if=/dev/zero of=$@ bs=512 count=93750
 	parted $@ -s -a minimal mklabel gpt
@@ -94,7 +96,7 @@ $(IMG): $(BOOT_DIR)/main.efi $(BOOT_DIR)/startup.nsh $(KERNELSRC)/kernel.elf
 
 # Clean up build files
 clean:
-	rm -f *.o *.so boot/*.efi *.img kernel/*.elf
+	rm -rf *.o *.so *.img $(BOOT_BIN) $(KERN_OBJDIR) $(KERN_BUILDDIR)
 
 fresh: clean all
 
