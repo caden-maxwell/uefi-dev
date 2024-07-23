@@ -3,11 +3,11 @@ TMP_PART := /tmp/part.img
 IMG := uefi.img
 OVMF_DIR := /usr/share/OVMF
 
-.PHONY: all clean run rerun
+.PHONY: all clean run fresh
 
 all: $(IMG)
 
-rerun: clean run
+fresh: clean all
 
 OVMF/OVMF_CODE.fd OVMF/OVMF_VARS.fd: $(OVMF_DIR)/OVMF_CODE.fd $(OVMF_DIR)/OVMF_VARS.fd
 	@echo "Copying OVMF files..."

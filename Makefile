@@ -1,6 +1,6 @@
 # Make Makefile in src/ directory
 
-.PHONY: all run rerun clean
+.PHONY: all run fresh clean
 
 all: src/
 	$(MAKE) -C $<
@@ -11,4 +11,4 @@ run: src/
 clean:
 	$(MAKE) -C src/ clean
 
-rerun: clean run
+fresh: clean all
