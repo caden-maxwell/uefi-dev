@@ -53,10 +53,10 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	InitializeLib(ImageHandle, SystemTable);
 
 	Print(L"Loading kernel...\n");
-	// if (LoadFile(NULL, L"\\EFI\\BOOT\\kernel.elf", ImageHandle, SystemTable) == NULL)
-	// 	Print(L"Could not load the kernel\n");
-	// else
-	// 	Print(L"Kernel loaded successfully\n");
+	if (LoadFile(NULL, L"\\EFI\\BOOT\\kernel.elf", ImageHandle, SystemTable) == NULL)
+		Print(L"Could not load the kernel\n");
+	else
+		Print(L"Kernel loaded successfully\n");
 
 	return EFI_SUCCESS;
 }
