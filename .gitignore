@@ -3,3 +3,4 @@
 *.efi
 *.img
 OVMF
+gnu-efi
