@@ -2,8 +2,6 @@
 
 .PHONY: all run rerun clean
 
-export NOT_IN_DOCKER := 1
-
 all: src/
 	$(MAKE) -C $<
 

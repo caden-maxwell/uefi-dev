@@ -23,11 +23,7 @@ run: $(IMG) OVMF/OVMF_CODE.fd OVMF/OVMF_VARS.fd
 		-net none
 
 $(GNU_EFI)/.exists:
-	@if [ -n "$$NOT_IN_DOCKER" ]; then \
-		git submodule update --init; \
-	else \
-		git clone https://git.code.sf.net/p/gnu-efi/code $(GNU_EFI); \
-	fi
+	git clone https://git.code.sf.net/p/gnu-efi/code $(GNU_EFI)
 	$(MAKE) -C $(GNU_EFI) -s
 	touch $@
 
