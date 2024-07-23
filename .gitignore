@@ -1,6 +1,5 @@
 *.o
 *.so
 *.efi
-*.swp
 *.img
 OVMF

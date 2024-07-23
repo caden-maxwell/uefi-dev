@@ -1,8 +1,23 @@
+# UEFI OS
+
+Can be run in a docker container or natively.
+
+## Docker
+
 Requirements:
-- `qemu`
-- `ovmf`
-- `mtools`
+- `docker`
 
-First, copy both `OVMF_CODE.fd` and `OVMF_VARS.fd` from `/usr/share/OVMF` to `./OVMF`
+```bash
+$ ./build_run_docker.sh
+```
 
-Then do `make run`
+## Native
+
+Requirements:
+- `qemu-system` 
+- `mtools` 
+- `ovmf` 
+- `build-essential` 
+- `parted` 
+
+Do `make`
