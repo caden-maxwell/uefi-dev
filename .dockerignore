@@ -1,6 +1,7 @@
 **/*.o
 **/*.so
 **/*.efi
+**/*.elf
 **/*.img
 src/OVMF
 src/gnu-efi

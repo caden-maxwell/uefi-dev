@@ -2,8 +2,11 @@
 
 .PHONY: all run fresh clean
 
-all: src/
+all: src/ kernel
 	$(MAKE) -C $<
+
+kernel: src/
+	$(MAKE) -C $< kernel
 
 run: src/
 	$(MAKE) -C $< run
