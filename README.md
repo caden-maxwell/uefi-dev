@@ -1,6 +1,6 @@
 # UEFI OS
 
-Can be run in a docker container or natively.
+May run in a [Docker](#Docker) container OR [natively](#Native).
 
 ## Docker
 
