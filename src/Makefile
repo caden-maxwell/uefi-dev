@@ -48,7 +48,8 @@ run: $(IMG) $(OVMF_DIR)/OVMF_CODE.fd $(OVMF_DIR)/OVMF_VARS.fd
 		-drive if=pflash,format=raw,readonly=on,file=$(word 2,$^) \
 		-drive if=pflash,format=raw,file=$(word 3,$^) \
 		-drive if=ide,format=raw,file=$< \
-		-net none
+		-net none \
+		--serial file:./out.log
 
 # Download and build GNU EFI
 $(GNU_EFI)/.exists:
@@ -79,7 +80,7 @@ $(BOOT_BIN)/main.efi: $(BOOTDIR)/main.c $(GNU_EFI)/.exists
 	sed -i '/^all:/ s/$(notdir $@)/$$(TARGETS)/' $(GNU_EFI)/apps/Makefile
 
 # Create the image with the EFI application and startup script
-$(IMG): $(BOOT_BIN)/main.efi $(BOOTDIR)/startup.nsh $(KERN_BUILDDIR)/kernel.elf
+$(IMG): $(BOOT_BIN)/main.efi $(KERN_BUILDDIR)/kernel.elf
 	@echo "Creating image $@..."
 	dd if=/dev/zero of=$@ bs=512 count=93750
 	parted $@ -s -a minimal mklabel gpt
@@ -89,9 +90,8 @@ $(IMG): $(BOOT_BIN)/main.efi $(BOOTDIR)/startup.nsh $(KERN_BUILDDIR)/kernel.elf
 	mformat -i $(TMP_PART) -h 32 -t 32 -n 64 -c 1
 	mmd -i $(TMP_PART) ::/EFI
 	mmd -i $(TMP_PART) ::/EFI/BOOT
-	mcopy -i $(TMP_PART) $< ::/EFI/BOOT
+	mcopy -i $(TMP_PART) $< ::/EFI/BOOT/bootx64.efi
 	mcopy -i $(TMP_PART) $(word 2,$^) ::
-	mcopy -i $(TMP_PART) $(word 3,$^) ::
 	dd if=$(TMP_PART) of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
 # Clean up build files

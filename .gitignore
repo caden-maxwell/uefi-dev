@@ -3,5 +3,6 @@
 *.efi
 *.img
 *.elf
+*.log
 OVMF
 gnu-efi
