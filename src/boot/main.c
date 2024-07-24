@@ -7,7 +7,6 @@ LoadFile(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandle)
 	EFI_FILE *LoadedFile;
 	EFI_STATUS Status;
 
-	Print(L"Loading image protocol\n");
 	EFI_LOADED_IMAGE *LoadedImage;
 	Status = BS->HandleProtocol(ImageHandle, &LoadedImageProtocol, (void **)&LoadedImage);
 	if (Status != EFI_SUCCESS)
