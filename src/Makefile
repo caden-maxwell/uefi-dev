@@ -2,10 +2,9 @@ TMP_PART := /tmp/part.img
 GNU_EFI := gnu-efi
 
 IMG := OS.img
-OVMF_SYS_DIR := /usr/share/OVMF
+QEMU_DIR := /usr/share/qemu
 BOOTDIR := boot
 BOOT_BIN := $(BOOTDIR)/bin
-OVMF_DIR := OVMF
 
 KERNDIR := kernel
 KERN_OBJDIR := $(KERNDIR)/lib
@@ -34,19 +33,12 @@ $(KERN_OBJDIR)/%.o: $(KERNDIR)/%.c
 %.elf: $(OBJS)
 	mkdir -p $(@D)
 	$(LD) $(LDFLAGS) -o $@ $^
-	
-# Copy installed system OVMF files to the local directory
-$(OVMF_DIR)/OVMF_CODE.fd $(OVMF_DIR)/OVMF_VARS.fd: $(OVMF_SYS_DIR)/OVMF_CODE.fd $(OVMF_SYS_DIR)/OVMF_VARS.fd
-	@echo "Copying OVMF files..."
-	mkdir -p OVMF
-	cp $^ OVMF/
 
 # Run the image in QEMU
-run: $(IMG) $(OVMF_DIR)/OVMF_CODE.fd $(OVMF_DIR)/OVMF_VARS.fd
+run: $(IMG) $(QEMU_DIR)/OVMF.fd
 	@echo "Running $<..."
 	qemu-system-x86_64 -cpu qemu64 \
-		-drive if=pflash,format=raw,readonly=on,file=$(word 2,$^) \
-		-drive if=pflash,format=raw,file=$(word 3,$^) \
+		-bios $(word 2,$^) \
 		-drive if=ide,format=raw,file=$< \
 		-net none \
 		--serial file:./out.log

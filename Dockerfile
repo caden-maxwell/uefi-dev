@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y \
     git \
     build-essential \
     qemu-system \
-    ovmf \
     mtools \
     parted \
     vim

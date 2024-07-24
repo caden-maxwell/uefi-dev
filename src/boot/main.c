@@ -2,14 +2,14 @@
 #include <efilib.h>
 
 EFI_FILE *
-LoadFile(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
+LoadFile(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandle)
 {
 	EFI_FILE *LoadedFile;
 	EFI_STATUS Status;
 
 	Print(L"Loading image protocol\n");
-	EFI_LOADED_IMAGE_PROTOCOL *LoadedImage;
-	Status = SystemTable->BootServices->HandleProtocol(ImageHandle, &LoadedImageProtocol, (void **)&LoadedImage);
+	EFI_LOADED_IMAGE *LoadedImage;
+	Status = BS->HandleProtocol(ImageHandle, &LoadedImageProtocol, (void **)&LoadedImage);
 	if (Status != EFI_SUCCESS)
 	{
 		Print(L"Could not load image protocol\n");
@@ -36,10 +36,13 @@ LoadFile(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_T
 		FileSystem->OpenVolume(FileSystem, &Directory);
 		Print(L"Opened volume\n");
 	}
+	else
+		Print(L"Directory is not null\n");
 
 	Status = Directory->Open(Directory, &LoadedFile, Path, EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
 	if (Status != EFI_SUCCESS)
 	{
+		Print(L"Could not load file\n");
 		return NULL;
 	}
 
@@ -47,16 +50,16 @@ LoadFile(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_T
 }
 
 EFI_STATUS
-EFIAPI
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
 	InitializeLib(ImageHandle, SystemTable);
 
 	Print(L"Loading kernel...\n");
-	if (LoadFile(NULL, L"\\EFI\\BOOT\\kernel.elf", ImageHandle, SystemTable) == NULL)
+	if (LoadFile(NULL, L"kernel.elf", ImageHandle) == NULL)
 		Print(L"Could not load the kernel\n");
 	else
 		Print(L"Kernel loaded successfully\n");
 
+	while(1);
 	return EFI_SUCCESS;
 }
