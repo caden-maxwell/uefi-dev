@@ -4,5 +4,4 @@
 **/*.elf
 **/*.img
 **/*.log
-src/OVMF
 src/gnu-efi
