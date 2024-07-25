@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "GNU-EFI",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/include/efi"
+            ]
+        }
+    ],
+    "version": 4
+}

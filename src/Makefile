@@ -11,7 +11,7 @@ KERN_OBJDIR := $(KERNDIR)/lib
 KERN_BUILDDIR = $(KERNDIR)/bin
 
 LDS = $(KERNDIR)/kernel.ld
-CC = gcc
+CC = x86_64-w64-mingw32-gcc
 LD = ld
 
 CFLAGS = -ffreestanding -fshort-wchar
@@ -45,8 +45,7 @@ run: $(IMG) $(QEMU_DIR)/OVMF.fd
 
 # Download and build GNU EFI
 $(GNU_EFI)/.exists:
-	git clone https://git.code.sf.net/p/gnu-efi/code $(GNU_EFI)
-	$(MAKE) -C $(GNU_EFI) -s
+	git clone https://github.com/ncroxon/gnu-efi $(GNU_EFI)
 	touch $@
 
 # Build EFI application with GNU EFI
@@ -60,13 +59,17 @@ $(BOOT_BIN)/main.efi: $(BOOTDIR)/main.c $(GNU_EFI)/.exists
 	@# Copy our source file to the apps directory
 	cp $< $(GNU_EFI)/apps/$(notdir $<)
 
-	$(MAKE) -C $(GNU_EFI) -s
+	$(MAKE) -C $(GNU_EFI) -s CC=$(CC) apps
 
 	@# Copy EFI application to the current directory
 	cp $(GNU_EFI)/x86_64/apps/$(notdir $@) $@
 
 	@# Remove the source file from the apps directory
 	rm -f $(GNU_EFI)/apps/$(notdir $<)
+
+	@# Remove obj files from x86_64/apps
+	rm -f $(GNU_EFI)/x86_64/apps/*.o
+	rm -f $(GNU_EFI)/x86_64/apps/*.so
 
 	@# Restore the apps Makefile
 	sed -i '/^all:/ s/$(notdir $@)/$$(TARGETS)/' $(GNU_EFI)/apps/Makefile

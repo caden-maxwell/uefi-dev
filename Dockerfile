@@ -11,7 +11,7 @@ VOLUME /tmp/.X11-unix
 RUN apt-get update && apt-get install -y \
     git \
     build-essential \
-    qemu-system \
+    qemu-system-x86 \
     mtools \
     parted \
     vim
@@ -26,3 +26,4 @@ COPY src/ .
 
 # Build the project if needed
 RUN make
+
