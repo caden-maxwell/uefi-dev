@@ -88,7 +88,7 @@ $(IMG): $(BOOT_BIN)/main.efi $(KERN_BUILDDIR)/kernel.elf
 
 # Clean up build files
 clean:
-	rm -rf *.o *.so *.img $(BOOT_BIN) $(KERN_OBJDIR) $(KERN_BUILDDIR)
+	rm -rf *.o *.so *.img $(BOOT_BIN) $(KERN_OBJDIR) $(KERN_BUILDDIR) *.log
 
 fresh: clean all
 
