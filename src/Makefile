@@ -2,24 +2,19 @@ IMG := OS.img
 
 BOOT := boot
 BOOT_BIN := $(BOOT)/bin
-POSIX_UEFI := $(BOOT)/uefi
 
 KERNEL := kernel
 KERNEL_BIN := $(KERNEL)/bin
 
 QEMU_DIR := /usr/share/qemu
 TMP_PART := /tmp/part.img
+LOG := out.log
+
+SUBDIRS := $(BOOT) $(KERNEL)
+
+.PHONY: all run clean distclean $(SUBDIRS) fresh 
 
 all: $(IMG)
-
-# Run the image in QEMU
-run: $(IMG) $(QEMU_DIR)/OVMF.fd
-	@echo "Running $<..."
-	qemu-system-x86_64 -cpu qemu64 \
-		-bios $(word 2,$^) \
-		-drive if=ide,format=raw,file=$< \
-		-net none \
-		--serial file:./out.log
 
 # Build EFI application with POSIX-EFI
 $(BOOT_BIN)/%.efi: $(BOOT)/%.c
@@ -43,17 +38,19 @@ $(IMG): $(BOOT_BIN)/main.efi $(KERNEL_BIN)/kernel.elf
 	mcopy -i $(TMP_PART) $(word 2,$^) ::
 	dd if=$(TMP_PART) of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
-# Clean up build files
-clean:
-	rm -f *.img *.log
-	$(MAKE) -C $(BOOT) clean
-	$(MAKE) -C $(KERNEL) clean
+# Run the image in QEMU
+run: $(IMG) $(QEMU_DIR)/OVMF.fd
+	@echo "Running $<..."
+	qemu-system-x86_64 -cpu qemu64 -m 256M \
+		-bios $(word 2,$^) \
+		-drive format=raw,file=$< \
+		-net none --serial file:$(LOG)
 
-# Remove all build files and git subdir
-distclean: clean
-	rm -rf $(POSIX_UEFI)
+# Clean up build files
+clean distclean: $(SUBDIRS)
+	rm -f $(IMG) $(LOG)
+	$(MAKE) -C $(BOOT) $@
+	$(MAKE) -C $(KERNEL) $@
 
 # Clean files and rebuild
 fresh: clean all
-
-.PHONY: all clean run fresh

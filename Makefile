@@ -1,14 +1,6 @@
-# Make Makefile in src/ directory
+RULES = all clean distclean run fresh
 
-.PHONY: all run clean fresh
+.PHONY: $(RULES)
 
-all: src/
-	$(MAKE) -C $<
-
-run: src/
-	$(MAKE) -C $< run
-
-clean:
-	$(MAKE) -C src/ clean
-
-fresh: clean all
+$(RULES):
+	$(MAKE) -C src $@

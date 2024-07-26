@@ -21,5 +21,5 @@ $(TARGET): $(SRCS)
 	$(LD) -nostdlib -z max-page-size=0x1000 -Ttext=0x01000000 $(OBJDIR)/kernel.o -o $(BINDIR)/$(TARGET)
 
 clean:
-	rm -rf $(OUTDIR)
+	rm -rf $(BINDIR)
 	rm -rf $(OBJDIR)

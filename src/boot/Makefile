@@ -24,10 +24,15 @@ $(BINDIR)/$(TARGET): $(SRC) $(UEFI)
 	mv $(TARGET) $(BINDIR)
 	mv $(TARGET:.efi=.o) $(OBJDIR)
 
-clean:
+clean distclean:
 	rm -rf $(BINDIR)
 	rm -rf $(OBJDIR)
-	$(MAKE) -C $(UEFI) clean
-
-distclean: clean
-	rm -rf $(UEFI)
+ifneq ($(wildcard $(UEFI)),)
+	ifeq ($@, distclean)
+		rm -rf $(UEFI)
+	else
+		$(MAKE) -C $(UEFI) clean
+	endif
+else
+	@echo "UEFI directory not found. Skipping..."
+endif
