@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     int i;
 
     /* load the file */
-    if ((f = fopen("hello/kernel.elf", "r")))
+    if ((f = fopen("kernel.elf", "r")))
     {
         fseek(f, 0, SEEK_END);
         size = ftell(f);

@@ -22,7 +22,7 @@ run: $(IMG) $(QEMU_DIR)/OVMF.fd
 		--serial file:./out.log
 
 # Build EFI application with POSIX-EFI
-$(BOOT_BIN)/%.efi: $(BOOT)/%.c $(POSIX_UEFI)
+$(BOOT_BIN)/%.efi: $(BOOT)/%.c
 	$(MAKE) -C $(BOOT)
 
 $(KERNEL)/bin/kernel.elf: $(KERNEL)/kernel.c
