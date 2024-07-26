@@ -1,8 +1,10 @@
 ARCH = x86_64
-TARGET = kernel.elf
-SRCS = kernel.c
 BINDIR = bin
 OBJDIR = lib
+
+TARGET = kernel.elf
+SRCS = kernel.c
+OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(TARGET)
 
@@ -14,12 +16,13 @@ CC = $(ARCH)-elf-gcc
 LD = $(ARCH)-elf-ld
 endif
 
-# UEFI wastes lots and lots of memory. Link our "kernel" at an address (32M) which isn't used by UEFI
-$(TARGET): $(SRCS)
+$(OBJDIR)/%.o: %.c
 	@mkdir -p $(BINDIR) $(OBJDIR)
-	$(CC) -ffreestanding -fno-stack-protector -fno-stack-check -D__$(ARCH)__ -I. -c $< -o $(OBJDIR)/kernel.o
-	$(LD) -nostdlib -z max-page-size=0x1000 -Ttext=0x01000000 $(OBJDIR)/kernel.o -o $(BINDIR)/$(TARGET)
+	$(CC) -ffreestanding -fno-stack-protector -fno-stack-check -D__$(ARCH)__ -I. -c $< -o $@
+
+# UEFI wastes lots and lots of memory. Link our "kernel" at an address (32M) which isn't used by UEFI
+$(TARGET): $(OBJS)
+	$(LD) -nostdlib -z max-page-size=0x1000 -Ttext=0x01000000 $(OBJS) -o $(BINDIR)/$(TARGET)
 
 clean nuke:
-	rm -rf $(BINDIR)
-	rm -rf $(OBJDIR)
+	rm -rf $(BINDIR) $(OBJDIR)

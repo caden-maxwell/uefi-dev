@@ -4,4 +4,4 @@
 **/*.elf
 **/*.img
 **/*.log
-src/gnu-efi
+src/boot/uefi

@@ -25,8 +25,7 @@ $(BINDIR)/$(TARGET): $(SRC) $(UEFI)
 	mv $(TARGET:.efi=.o) $(OBJDIR)
 
 clean nuke:
-	rm -rf $(BINDIR)
-	rm -rf $(OBJDIR)
+	rm -rf $(BINDIR) $(OBJDIR)
 ifneq ($(wildcard $(UEFI)),)
 	@if [ $@ = "nuke" ]; then \
 		action="rm -rf $(UEFI)"; \
