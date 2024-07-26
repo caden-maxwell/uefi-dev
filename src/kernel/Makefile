@@ -20,6 +20,6 @@ $(TARGET): $(SRCS)
 	$(CC) -ffreestanding -fno-stack-protector -fno-stack-check -D__$(ARCH)__ -I. -c $< -o $(OBJDIR)/kernel.o
 	$(LD) -nostdlib -z max-page-size=0x1000 -Ttext=0x01000000 $(OBJDIR)/kernel.o -o $(BINDIR)/$(TARGET)
 
-clean:
+clean nuke:
 	rm -rf $(BINDIR)
 	rm -rf $(OBJDIR)

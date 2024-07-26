@@ -24,15 +24,16 @@ $(BINDIR)/$(TARGET): $(SRC) $(UEFI)
 	mv $(TARGET) $(BINDIR)
 	mv $(TARGET:.efi=.o) $(OBJDIR)
 
-clean distclean:
+clean nuke:
 	rm -rf $(BINDIR)
 	rm -rf $(OBJDIR)
 ifneq ($(wildcard $(UEFI)),)
-	ifeq ($@, distclean)
-		rm -rf $(UEFI)
-	else
-		$(MAKE) -C $(UEFI) clean
-	endif
+	@if [ $@ = "nuke" ]; then \
+		action="rm -rf $(UEFI)"; \
+	else \
+	 	action="$(MAKE) -C $(UEFI) clean"; \
+	fi; \
+	echo $$action && $$action
 else
-	@echo "UEFI directory not found. Skipping..."
+	@echo "No $(UEFI) directory found"
 endif

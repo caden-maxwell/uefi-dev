@@ -46,11 +46,11 @@ run: $(IMG) $(QEMU_DIR)/OVMF.fd
 		-drive format=raw,file=$< \
 		-net none --serial file:$(LOG)
 
+# Clean files and rebuild
+fresh: clean all
+
 # Clean up build files
-clean distclean: $(SUBDIRS)
+clean nuke: $(SUBDIRS)
 	rm -f $(IMG) $(LOG)
 	$(MAKE) -C $(BOOT) $@
 	$(MAKE) -C $(KERNEL) $@
-
-# Clean files and rebuild
-fresh: clean all

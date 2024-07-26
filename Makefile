@@ -1,4 +1,4 @@
-RULES = all clean distclean run fresh
+RULES = all clean nuke run fresh
 
 .PHONY: $(RULES)
 
