@@ -9,12 +9,7 @@
 #define ELFDATA2LSB 1 /* 2's complement, little endian */
 #define ET_EXEC 2     /* Executable file */
 #define PT_LOAD 1     /* Loadable program segment */
-#ifdef __x86_64__
-#define EM_MACH 62 /* AMD x86-64 architecture */
-#endif
-#ifdef __aarch64__
-#define EM_MACH 183 /* ARM aarch64 architecture */
-#endif
+#define EM_MACH 62    /* AMD x86-64 architecture */
 
 typedef struct
 {
@@ -46,19 +41,11 @@ typedef struct
     uint64_t p_align;  /* Segment alignment */
 } Elf64_Phdr;
 
-void any_key_to_exit()
-{
-    printf("\nPress any key to exit...\n");
-    getchar();
-}
-
 /**
- * Load an ELF executable
+ * Loads an ELF executable file into memory and executes it.
  */
-int main(int argc, char **argv)
+FILE *get_file(const char *path)
 {
-    (void)argc;
-    (void)argv;
     FILE *f;
     char *buff;
     long int size;
@@ -68,7 +55,7 @@ int main(int argc, char **argv)
     int i;
 
     /* load the file */
-    if ((f = fopen("kernel.elf", "r")))
+    if ((f = fopen(path, "r")))
     {
         fseek(f, 0, SEEK_END);
         size = ftell(f);
@@ -77,8 +64,7 @@ int main(int argc, char **argv)
         if (!buff)
         {
             fprintf(stderr, "unable to allocate memory\n");
-            any_key_to_exit();
-            return 1;
+            return NULL;
         }
         fread(buff, size, 1, f);
         fclose(f);
@@ -86,19 +72,18 @@ int main(int argc, char **argv)
     else
     {
         fprintf(stderr, "Unable to open file\n");
-        any_key_to_exit();
-        return 0;
+        return NULL;
     }
 
-    /* is it a valid ELF executable for this architecture? */
+    // valid ELF executable for the architecture?
     elf = (Elf64_Ehdr *)buff;
-    if (!memcmp(elf->e_ident, ELFMAG, SELFMAG) && /* magic match? */
-        elf->e_ident[EI_CLASS] == ELFCLASS64 &&   /* 64 bit? */
-        elf->e_ident[EI_DATA] == ELFDATA2LSB &&   /* LSB? */
-        elf->e_type == ET_EXEC &&                 /* executable object? */
-        elf->e_machine == EM_MACH &&              /* architecture match? */
-        elf->e_phnum > 0)
-    { /* has program headers? */
+    if (!memcmp(elf->e_ident, ELFMAG, SELFMAG) && // magic match?
+        elf->e_ident[EI_CLASS] == ELFCLASS64 &&   // 64 bit?
+        elf->e_ident[EI_DATA] == ELFDATA2LSB &&   // LSB?
+        elf->e_type == ET_EXEC &&                 // executable object?
+        elf->e_machine == EM_MACH &&              // architecture match?
+        elf->e_phnum > 0)                         // has program headers?
+    {
         /* load segments */
         for (phdr = (Elf64_Phdr *)(buff + elf->e_phoff), i = 0;
              i < elf->e_phnum;
@@ -117,8 +102,7 @@ int main(int argc, char **argv)
     else
     {
         fprintf(stderr, "not a valid ELF executable for this architecture\n");
-        any_key_to_exit();
-        return 0;
+        return NULL;
     }
     /* free resources */
     free(buff);
@@ -128,7 +112,34 @@ int main(int argc, char **argv)
     i = (*((int (*__attribute__((sysv_abi)))(void))(entry)))();
     printf("ELF returned %d\n", i);
 
-    any_key_to_exit();
+    return f;
+}
+
+int print(const char *str)
+{
+    return printf("%s\n", str);
+}
+
+int main(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+    print("\n-------------------------");
+    print("--== UEFI Bootloader ==--");
+    print("-------------------------\n");
+
+    const char *path = "kernel.elf";
+    printf("Loading kernel at %s\n", path);
+
+    FILE *f = get_file(path);
+    if (f == NULL)
+        printf("Failed to load kernel\n");
+    else
+        printf("Successfully loaded kernel\n");
+
+    printf("\nPress any key to exit...\n");
+    getchar();
 
     return 0;
 }
