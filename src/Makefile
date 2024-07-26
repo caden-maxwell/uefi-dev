@@ -21,21 +21,9 @@ run: $(IMG) $(QEMU_DIR)/OVMF.fd
 		-net none \
 		--serial file:./out.log
 
-# Get POSIX-UEFI
-$(POSIX_UEFI):
-	git clone -n https://gitlab.com/bztsrc/posix-uefi.git $(@D)/posix-uefi
-	cd $(@D)/posix-uefi \
-		&& git sparse-checkout set --no-cone '/uefi/*' \
-		&& git checkout
-	
-	@# Move the inner directories to the root
-	mv $(@D)/posix-uefi/uefi $(@D)
-	rm -rf $(@D)/posix-uefi
-	cd $(@D) && make
-
-# Build EFI application with GNU EFI
+# Build EFI application with POSIX-EFI
 $(BOOT_BIN)/%.efi: $(BOOT)/%.c $(POSIX_UEFI)
-	$(MAKE) -C $(BOOT) OUTDIR=$(notdir $(BOOT_BIN))/
+	$(MAKE) -C $(BOOT)
 
 $(KERNEL)/bin/kernel.elf: $(KERNEL)/kernel.c
 	$(MAKE) -C $(KERNEL)
@@ -58,7 +46,7 @@ $(IMG): $(BOOT_BIN)/main.efi $(KERNEL_BIN)/kernel.elf
 # Clean up build files
 clean:
 	rm -f *.img *.log
-	$(MAKE) -C $(BOOT) clean OUTDIR=$(notdir $(BOOT_BIN))
+	$(MAKE) -C $(BOOT) clean
 	$(MAKE) -C $(KERNEL) clean
 
 # Remove all build files and git subdir
