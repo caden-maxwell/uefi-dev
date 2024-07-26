@@ -3,8 +3,7 @@
         {
             "name": "GNU-EFI",
             "includePath": [
-                "${workspaceFolder}/**",
-                "/usr/include/efi"
+                "${workspaceFolder}/**"
             ]
         }
     ],

@@ -1,38 +1,14 @@
-TMP_PART := /tmp/part.img
-GNU_EFI := gnu-efi
-
 IMG := OS.img
+BOOT := boot
+KERNEL := kernel
+
+POSIX_UEFI := $(BOOT)/uefi
+BOOT_BIN := $(BOOT)/bin
+
 QEMU_DIR := /usr/share/qemu
-BOOTDIR := boot
-BOOT_BIN := $(BOOTDIR)/bin
-
-KERNDIR := kernel
-KERN_OBJDIR := $(KERNDIR)/lib
-KERN_BUILDDIR = $(KERNDIR)/bin
-
-LDS = $(KERNDIR)/kernel.ld
-CC = x86_64-w64-mingw32-gcc
-LD = ld
-
-CFLAGS = -ffreestanding -fshort-wchar
-LDFLAGS = -T $(LDS) -static -Bsymbolic -nostdlib
-
-# Recursive wildcard: https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make
-rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
-
-C_FILES = $(call rwildcard,$(KERNDIR),*.c)          
-OBJS = $(patsubst $(KERNDIR)/%.c, $(KERN_OBJDIR)/%.o, $(C_FILES))
-DIRS = $(wildcard $(KERNDIR)/*)
+TMP_PART := /tmp/part.img
 
 all: $(IMG)
-
-$(KERN_OBJDIR)/%.o: $(KERNDIR)/%.c
-	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $^ -o $@
-
-%.elf: $(OBJS)
-	mkdir -p $(@D)
-	$(LD) $(LDFLAGS) -o $@ $^
 
 # Run the image in QEMU
 run: $(IMG) $(QEMU_DIR)/OVMF.fd
@@ -43,39 +19,26 @@ run: $(IMG) $(QEMU_DIR)/OVMF.fd
 		-net none \
 		--serial file:./out.log
 
-# Download and build GNU EFI
-$(GNU_EFI)/.exists:
-	git clone https://github.com/ncroxon/gnu-efi $(GNU_EFI)
-	touch $@
+# Get POSIX-UEFI
+$(POSIX_UEFI):
+	git clone -n https://gitlab.com/bztsrc/posix-uefi.git $(@D)/posix-uefi
+	cd $(@D)/posix-uefi \
+		&& git sparse-checkout set --no-cone '/uefi/*' \
+		&& git checkout
+	
+	@# Move the inner directories to the root
+	mv $(@D)/posix-uefi/uefi $(@D)
+	rm -rf $(@D)/posix-uefi
 
 # Build EFI application with GNU EFI
-$(BOOT_BIN)/main.efi: $(BOOTDIR)/main.c $(GNU_EFI)/.exists
-	@echo "Building $@ from $<..."
-	mkdir -p $(@D)
+$(BOOT_BIN)/%.efi: $(BOOT)/%.c $(POSIX_UEFI)
+	$(MAKE) -C $(BOOT)
 
-	@# Patch the apps Makefile to build only our target
-	sed -i '/^all:/ s/\$$(TARGETS)/$(notdir $@)/' $(GNU_EFI)/apps/Makefile
-	
-	@# Copy our source file to the apps directory
-	cp $< $(GNU_EFI)/apps/$(notdir $<)
-
-	$(MAKE) -C $(GNU_EFI) -s CC=$(CC) apps
-
-	@# Copy EFI application to the current directory
-	cp $(GNU_EFI)/x86_64/apps/$(notdir $@) $@
-
-	@# Remove the source file from the apps directory
-	rm -f $(GNU_EFI)/apps/$(notdir $<)
-
-	@# Remove obj files from x86_64/apps
-	rm -f $(GNU_EFI)/x86_64/apps/*.o
-	rm -f $(GNU_EFI)/x86_64/apps/*.so
-
-	@# Restore the apps Makefile
-	sed -i '/^all:/ s/$(notdir $@)/$$(TARGETS)/' $(GNU_EFI)/apps/Makefile
+$(KERNEL):
+	$(MAKE) -C $(KERNEL)
 
 # Create the image with the EFI application and startup script
-$(IMG): $(BOOT_BIN)/main.efi $(KERN_BUILDDIR)/kernel.elf
+$(IMG): $(BOOT_BIN)/main.efi $(KERNEL)
 	@echo "Creating image $@..."
 	dd if=/dev/zero of=$@ bs=512 count=93750
 	parted $@ -s -a minimal mklabel gpt
@@ -91,8 +54,14 @@ $(IMG): $(BOOT_BIN)/main.efi $(KERN_BUILDDIR)/kernel.elf
 
 # Clean up build files
 clean:
-	rm -rf *.o *.so *.img $(BOOT_BIN) $(KERN_OBJDIR) $(KERN_BUILDDIR) *.log
+	rm -rf *.o *.so *.img *.log
+	$(MAKE) -C $(POSIX_UEFI) clean
 
+# Remove all build files and git subdir
+distclean: clean
+	rm -rf $(POSIX_UEFI)
+
+# Clean files and rebuild
 fresh: clean all
 
 .PHONY: all clean run fresh
