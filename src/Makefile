@@ -1,9 +1,11 @@
 IMG := OS.img
-BOOT := boot
-KERNEL := kernel
 
-POSIX_UEFI := $(BOOT)/uefi
+BOOT := boot
 BOOT_BIN := $(BOOT)/bin
+POSIX_UEFI := $(BOOT)/uefi
+
+KERNEL := kernel
+KERNEL_BIN := $(KERNEL)/bin
 
 QEMU_DIR := /usr/share/qemu
 TMP_PART := /tmp/part.img
@@ -29,16 +31,17 @@ $(POSIX_UEFI):
 	@# Move the inner directories to the root
 	mv $(@D)/posix-uefi/uefi $(@D)
 	rm -rf $(@D)/posix-uefi
+	cd $(@D) && make
 
 # Build EFI application with GNU EFI
 $(BOOT_BIN)/%.efi: $(BOOT)/%.c $(POSIX_UEFI)
-	$(MAKE) -C $(BOOT)
+	$(MAKE) -C $(BOOT) OUTDIR=$(notdir $(BOOT_BIN))/
 
-$(KERNEL):
+$(KERNEL)/bin/kernel.elf: $(KERNEL)/kernel.c
 	$(MAKE) -C $(KERNEL)
 
 # Create the image with the EFI application and startup script
-$(IMG): $(BOOT_BIN)/main.efi $(KERNEL)
+$(IMG): $(BOOT_BIN)/main.efi $(KERNEL_BIN)/kernel.elf
 	@echo "Creating image $@..."
 	dd if=/dev/zero of=$@ bs=512 count=93750
 	parted $@ -s -a minimal mklabel gpt
@@ -54,8 +57,9 @@ $(IMG): $(BOOT_BIN)/main.efi $(KERNEL)
 
 # Clean up build files
 clean:
-	rm -rf *.o *.so *.img *.log
-	$(MAKE) -C $(POSIX_UEFI) clean
+	rm -f *.img *.log
+	$(MAKE) -C $(BOOT) clean OUTDIR=$(notdir $(BOOT_BIN))
+	$(MAKE) -C $(KERNEL) clean
 
 # Remove all build files and git subdir
 distclean: clean
