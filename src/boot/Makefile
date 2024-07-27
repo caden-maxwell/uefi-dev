@@ -1,8 +1,9 @@
 ARCH = x86_64
-TARGET = main.efi
-SRC = $(TARGET:.efi=.c)
 BINDIR = bin
 OBJDIR = lib
+
+TARGET = main.efi
+SRC = $(TARGET:.efi=.c)
 UEFI = uefi
 
 all: $(BINDIR)/$(TARGET)

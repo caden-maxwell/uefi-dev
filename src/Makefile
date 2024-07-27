@@ -10,9 +10,7 @@ QEMU_DIR := /usr/share/qemu
 TMP_PART := /tmp/part.img
 LOG := out.log
 
-SUBDIRS := $(BOOT) $(KERNEL)
-
-.PHONY: all run clean distclean $(SUBDIRS) fresh 
+.PHONY: all run clean distclean fresh 
 
 all: $(IMG)
 
@@ -20,7 +18,7 @@ all: $(IMG)
 $(BOOT_BIN)/%.efi: $(BOOT)/%.c
 	$(MAKE) -C $(BOOT)
 
-$(KERNEL)/bin/kernel.elf: $(KERNEL)/kernel.c
+$(KERNEL_BIN)/kernel.elf: $(wildcard $(KERNEL)/*.c)
 	$(MAKE) -C $(KERNEL)
 
 # Create the image with the EFI application and startup script
@@ -35,7 +33,7 @@ $(IMG): $(BOOT_BIN)/main.efi $(KERNEL_BIN)/kernel.elf
 	mmd -i $(TMP_PART) ::/EFI
 	mmd -i $(TMP_PART) ::/EFI/BOOT
 	mcopy -i $(TMP_PART) $< ::/EFI/BOOT/bootx64.efi
-	mcopy -i $(TMP_PART) $(word 2,$^) ::
+	mcopy -i $(TMP_PART) $(KERNEL_BIN)/kernel.elf ::
 	dd if=$(TMP_PART) of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
 # Run the image in QEMU
@@ -50,7 +48,7 @@ run: $(IMG) $(QEMU_DIR)/OVMF.fd
 fresh: clean all
 
 # Clean up build files
-clean nuke: $(SUBDIRS)
+clean nuke:
 	rm -f $(IMG) $(LOG)
 	$(MAKE) -C $(BOOT) $@
 	$(MAKE) -C $(KERNEL) $@

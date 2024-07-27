@@ -1,4 +1,6 @@
+#include "math.h"
+
 int _start()
 {
-    return 123;
+    return factorial(add(5, 5));
 }
