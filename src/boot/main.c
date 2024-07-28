@@ -1,4 +1,4 @@
-#include <uefi.h>
+#include "uefi.h"
 
 /*** ELF64 defines and structs ***/
 #define ELFMAG "\177ELF"
@@ -140,6 +140,9 @@ int main(int argc, char **argv)
 
     printf("\nPress any key to exit...\n");
     getchar();
+
+    // shutdown the system
+    RT->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
 
     return 0;
 }
