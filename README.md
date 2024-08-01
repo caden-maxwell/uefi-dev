@@ -1,4 +1,4 @@
-# UEFI OS
+# UEFI Dev
 
 May run in a [Docker](#Docker) container OR [natively](#Native).
 
@@ -25,7 +25,7 @@ $ ./run_docker.sh
 - `qemu-system` 
 - `ovmf` 
 - `mtools` 
-- `parted` 
+- `parted`
 
 ## `Makefile` usage:
 
