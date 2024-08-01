@@ -31,7 +31,7 @@ $ ./run_docker.sh
 
 ## `Makefile` usage:
 
-Once you are up and running in the Docker container or have installed the requirements natively, you can run the following commands:
+Once you are up and running in the Docker or have installed the requirements natively, you can run the following commands:
 
 ### `make` or `make all`:
 
