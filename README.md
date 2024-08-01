@@ -1,6 +1,8 @@
 # UEFI Dev
 
-May run in a [Docker](#Docker) container OR [natively](#Native).
+I've never really understood the difference between things like BIOS, UEFI, bootloaders, and the kernel, or really much of anything that goes on when a computer boots. This is my space to learn about all of that, specifically diving into the UEFI spec and how to create UEFI applications. In the future, maybe I'll even attempt to write my own kernel and mini OS. We'll see!
+
+This code can be run in via [Docker](#Docker) container OR [natively](#Native).
 
 ## Docker
 
@@ -33,7 +35,7 @@ Once you are up and running in the Docker container or have installed the requir
 
 ### `make` or `make all`:
 
-Compiles the UEFI application, and generates an image, which is named `OS.img`.
+Compiles the UEFI application, and generates an image named `OS.img`.
 
 ### `make run`:
 
