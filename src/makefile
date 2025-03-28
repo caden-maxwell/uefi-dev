@@ -9,7 +9,7 @@ KERNEL_BIN := $(KERNEL)/bin
 TMP_PART := /tmp/part.img
 LOG := out.log
 
-.PHONY: all run clean distclean fresh 
+.PHONY: all run clean nuke fresh 
 
 all: $(IMG)
 
