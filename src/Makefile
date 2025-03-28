@@ -6,7 +6,6 @@ BOOT_BIN := $(BOOT)/bin
 KERNEL := kernel
 KERNEL_BIN := $(KERNEL)/bin
 
-QEMU_DIR := /usr/share/qemu
 TMP_PART := /tmp/part.img
 LOG := out.log
 
@@ -25,9 +24,9 @@ $(KERNEL_BIN)/kernel.elf: $(wildcard $(KERNEL)/*.c)
 $(IMG): $(BOOT_BIN)/main.efi $(KERNEL_BIN)/kernel.elf
 	@echo "Creating image $@..."
 	dd if=/dev/zero of=$@ bs=512 count=93750
-	parted $@ -s -a minimal mklabel gpt
-	parted $@ -s -a minimal mkpart EFI FAT16 2048s 93716s
-	parted $@ -s -a minimal toggle 1 boot
+	parted $@ -s mklabel gpt
+	parted $@ -s mkpart EFI FAT32 2048s 93716s
+	parted $@ -s toggle 1 boot
 	dd if=/dev/zero of=$(TMP_PART) bs=512 count=91669
 	mformat -i $(TMP_PART) -h 32 -t 32 -n 64 -c 1
 	mmd -i $(TMP_PART) ::/EFI
@@ -37,7 +36,7 @@ $(IMG): $(BOOT_BIN)/main.efi $(KERNEL_BIN)/kernel.elf
 	dd if=$(TMP_PART) of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
 # Run the image in QEMU
-run: $(IMG) $(QEMU_DIR)/OVMF.fd
+run: $(IMG) OVMF.fd
 	@echo "Running $<..."
 	qemu-system-x86_64 -cpu qemu64 -m 256M \
 		-bios $(word 2,$^) \
