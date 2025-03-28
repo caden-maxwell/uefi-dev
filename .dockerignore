@@ -1,7 +1,0 @@
-**/*.o
-**/*.so
-**/*.efi
-**/*.elf
-**/*.img
-**/*.log
-src/boot/uefi
