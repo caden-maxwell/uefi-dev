@@ -1,34 +1,38 @@
 SOURCE = efi.c
+OBJ    = $(SOURCE:.c=.o)
+DEPENDS = $(OBJ:.o=.d)
 TARGET = BOOTX64.EFI
-
-# CC = x86_64-w64-mingw32-gcc \
-# 		-Wl,--subsystem,10 \
-# 		-e efi_main \
-
-CC = clang \
-		-target x86_64-unknown-windows \
-		-fuse-ld=lld-link \
-		-Wl,-subsystem:efi_application \
-		-Wl,-entry:efi_main
-
-CFLAGS = \
-	-std=c17 \
-	-Wall -Wextra -Wpedantic \
-	-mno-red-zone \
-	-ffreestanding -nostdlib
 
 IMG := OS.img
 TMP_PART = /tmp/part.img
 FIRMWARE_BIN = bios64.bin
 QEMU_LOG = qemu.log
 
+# CC = x86_64-w64-mingw32-gcc \
+# 	-Wl,--subsystem,10 \
+# 	-e efi_main
+
+CC = clang \
+	-target x86_64-unknown-windows \
+	-fuse-ld=lld-link \
+	-Wl,-subsystem:efi_application \
+	-Wl,-entry:efi_main
+
+CFLAGS = \
+	-std=c17 \
+	-Wall -Wextra -Wpedantic \
+	-mno-red-zone \
+	-MMD \
+	-ffreestanding -nostdlib
 
 .PHONY: all run clean nuke fresh 
 
 all: $(IMG)
 
-$(TARGET): $(SOURCE)
+$(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) $< -o $@
+
+-include $(DEPENDS)
 
 # Create the image with the EFI application and startup script
 $(IMG): $(TARGET)
@@ -57,4 +61,4 @@ run: $(IMG)
 fresh: clean all
 
 clean:
-	rm -f *.img *.EFI *.log
+	rm -f *.img *.EFI *.log *.o *.d
