@@ -3,34 +3,49 @@
 EFI_STATUS Status;
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
-    (void)ImageHandle;
+    (void)ImageHandle; // Unused for now
+
     EFI_SYSTEM_TABLE  *ST = SystemTable;
     EFI_BOOT_SERVICES *BS = ST->BootServices;
+    EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut = ST->ConOut;
+    EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn = ST->ConIn;
 
     // Clear screen, set cursor position to (0,0), etc...
-    Status = ST->ConOut->Reset(ST->ConOut, FALSE);
-    ST->ConOut->SetAttribute(ST->ConOut, EFI_TEXT_ATTR(EFI_YELLOW, EFI_BLUE));
-    ST->ConOut->ClearScreen(ST->ConOut);
+    Status = cOut->Reset(cOut, FALSE);
 
-    ST->ConOut->OutputString(ST->ConOut, u"--------------------------------\r\n");
-    ST->ConOut->OutputString(ST->ConOut, u"---- WELCOME TO MY UEFI APP ----\r\n");
-    ST->ConOut->OutputString(ST->ConOut, u"--------------------------------\r\n\n");
+    // Set colors
+    cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
+    cOut->ClearScreen(cOut);
 
-    ST->ConOut->OutputString(ST->ConOut, u"Press a key...\r\n");
+    cOut->OutputString(cOut, u"--------------------------------\r\n");
+    cOut->OutputString(cOut, u"---- WELCOME TO MY UEFI APP ----\r\n");
+    cOut->OutputString(cOut, u"--------------------------------\r\n\n");
+
+    cOut->OutputString(cOut, u"TEXT MODE: ");
+    CHAR16 mode = (CHAR16)(cOut->Mode->Mode + 48);
+    CHAR16 mode_str[2] = {mode, u'\0'};
+    cOut->OutputString(cOut, mode_str);
+    cOut->OutputString(cOut, u"\r\n");
+
+
+    cOut->OutputString(cOut, u"Press a key...\r\n");
 
     // Wait until key has been pressed
-    BS->WaitForEvent(1, &ST->ConIn->WaitForKey, NULL);
+    BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
 
-    // Read in the key and print it
+    // Read in the keystroke
     EFI_INPUT_KEY Key;
-    ST->ConIn->ReadKeyStroke(ST->ConIn, &Key);
-    ST->ConOut->OutputString(ST->ConOut, u"You pressed: ");
-    ST->ConOut->OutputString(ST->ConOut, &Key.UnicodeChar);
-    ST->ConOut->OutputString(ST->ConOut, u"\r\n");
+    cIn->ReadKeyStroke(cIn, &Key);
+    
+    // Print it
+    CHAR16 str[2] = {Key.UnicodeChar, u'\0'};
+    cOut->OutputString(cOut, u"You pressed: '");
+    cOut->OutputString(cOut, &str);
+    cOut->OutputString(cOut, u"'\r\n");
 
     // Wait until user presses key to exit
-    ST->ConOut->OutputString(ST->ConOut, u"Press any key to exit...\r\n");
-    BS->WaitForEvent(1, &ST->ConIn->WaitForKey, NULL);
+    cOut->OutputString(cOut, u"Press any key to exit...\r\n");
+    BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
 
     return EFI_SUCCESS;
 }
