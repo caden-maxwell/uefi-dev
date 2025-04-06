@@ -1,8 +1,8 @@
 *.o
 *.so
-*.efi
 *.EFI
 *.img
 *.elf
 *.log
 *.a
+*.d
