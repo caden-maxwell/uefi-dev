@@ -57,4 +57,4 @@ run: $(IMG)
 fresh: clean all
 
 clean:
-	rm -f $(IMG) $(TARGET) $(QEMU_LOG)
+	rm -f *.img *.EFI *.log
