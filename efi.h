@@ -160,11 +160,47 @@ EFI_STATUS
 );
 
 // UEFI Spec 12.4.3
+// TODO: Implement related definitions (boxdraw chars, arrows, shapes, etc.)
 typedef
 EFI_STATUS
 (EFIAPI *EFI_TEXT_STRING)(
     IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
     IN CHAR16                          *String
+);
+
+// UEFI Spec 12.4.4
+typedef
+EFI_STATUS
+(EFIAPI *EFI_TEXT_TEST_STRING) (
+    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    IN CHAR16                          *String
+);
+
+// UEFI Spec 12.4.5
+typedef
+EFI_STATUS
+(EFIAPI *EFI_TEXT_QUERY_MODE) (
+    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    IN UINTN                           ModeNumber,
+    OUT UINTN                          *Columns,
+    OUT UINTN                          *Rows
+);
+
+// UEFI Spec 12.4.6
+typedef
+EFI_STATUS
+(* EFIAPI EFI_TEXT_SET_MODE) (
+    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    IN UINTN                           ModeNumber
+);
+
+// UEFI Spec 12.4.7
+// TODO: Implement related definitions (colors)
+typedef
+EFI_STATUS
+(EFIAPI *EFI_TEXT_SET_ATTRIBUTE) (
+    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    IN UINTN                           Attribute
 );
 
 // UEFI Spec 12.4.8
@@ -174,27 +210,52 @@ EFI_STATUS
     IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This
 );
 
+// UEFI Spec 12.4.9
+typedef
+EFI_STATUS
+(EFIAPI *EFI_TEXT_SET_CURSOR_POSITION) (
+    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    IN UINTN                           Column,
+    IN UINTN                           Row
+);
+
+// UEFI Spec 12.4.10
+typedef
+EFI_STATUS
+(EFIAPI *EFI_TEXT_ENABLE_CURSOR) (
+    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+    IN BOOLEAN                         Visible
+);
+
+// UEFI Spec 12.4.1
+typedef struct {
+    INT32   MaxMode;
+    INT32   Mode;
+    INT32   Attribute;
+    INT32   CursorColumn;
+    INT32   CursorRow;
+    BOOLEAN CursorVisible;
+} SIMPLE_TEXT_OUTPUT_MODE;
+
 // UEFI Spec 12.4.1
 typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
     EFI_TEXT_RESET               Reset;
     EFI_TEXT_STRING              OutputString;
-    void                         *TestString;// EFI_TEXT_TEST_STRING         TestString;
-    void                         *QueryMode;// EFI_TEXT_QUERY_MODE          QueryMode;
-    void                         *SetMode;// EFI_TEXT_SET_MODE            SetMode;
-    void                         *SetAttribute;// EFI_TEXT_SET_ATTRIBUTE       SetAttribute;
+    EFI_TEXT_TEST_STRING         TestString;
+    EFI_TEXT_QUERY_MODE          QueryMode;
+    EFI_TEXT_SET_MODE            SetMode;
+    EFI_TEXT_SET_ATTRIBUTE       SetAttribute;
     EFI_TEXT_CLEAR_SCREEN        ClearScreen;
-    void                         *SetCursorPosition;// EFI_TEXT_SET_CURSOR_POSITION SetCursorPosition;
-    void                         *EnableCursor;// EFI_TEXT_ENABLE_CURSOR       EnableCursor;
-    void                         *Mode;// SIMPLE_TEXT_OUTPUT_MODE      *Mode;
+    EFI_TEXT_SET_CURSOR_POSITION SetCursorPosition;
+    EFI_TEXT_ENABLE_CURSOR       EnableCursor;
+    SIMPLE_TEXT_OUTPUT_MODE      *Mode;
 } EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 
 // ----------------------------------
 // ------ EFI_RUNTIME_SERVICES ------
 // ----------------------------------
 
-typedef struct _EFI_RUNTIME_SERVICES {
-
-} EFI_RUNTIME_SERVICES;
+typedef struct _EFI_RUNTIME_SERVICES EFI_RUNTIME_SERVICES;
 
 // -------------------------------
 // ------ EFI_BOOT_SERVICES ------
@@ -348,9 +409,7 @@ typedef struct {
 // ------ EFI_CONFIGURATION_TABLE ------
 // -------------------------------------
 
-typedef struct _EFI_CONFIGURATION_TABLE {
-
-} EFI_CONFIGURATION_TABLE;
+typedef struct _EFI_CONFIGURATION_TABLE EFI_CONFIGURATION_TABLE;
 
 // ------------------------------
 // ------ EFI_SYSTEM_TABLE ------

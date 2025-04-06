@@ -1,18 +1,22 @@
-SOURCE = efi.c
-OBJ    = $(SOURCE:.c=.o)
-DEPENDS = $(OBJ:.o=.d)
-TARGET = BOOTX64.EFI
+SOURCES = efi.c
+OBJS    = $(SOURCES:.c=.o)
+DEPENDS = $(OBJS:.o=.d)
+TARGET  = BOOTX64.EFI
 
 IMG := OS.img
 TMP_PART = /tmp/part.img
 FIRMWARE_BIN = bios64.bin
 QEMU_LOG = qemu.log
 
-# CC = x86_64-w64-mingw32-gcc \
-# 	-Wl,--subsystem,10 \
-# 	-e efi_main
+#CC = x86_64-w64-mingw32-gcc
+#LDFLAGS = \
+ 	-nostdlib \
+  	-Wl,--subsystem,10 \
+  	-e efi_main
 
-CC = clang \
+CC = clang -target x86_64-unknown-windows
+LDFLAGS = \
+	-nostdlib \
 	-target x86_64-unknown-windows \
 	-fuse-ld=lld-link \
 	-Wl,-subsystem:efi_application \
@@ -23,14 +27,17 @@ CFLAGS = \
 	-Wall -Wextra -Wpedantic \
 	-mno-red-zone \
 	-MMD \
-	-ffreestanding -nostdlib
+	-ffreestanding
 
 .PHONY: all run clean nuke fresh 
 
 all: $(IMG)
 
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $< -o $@
+$(OBJS): $(SOURCES)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(TARGET): $(OBJS)
+	$(CC) $(LDFLAGS) $< -o $@
 
 -include $(DEPENDS)
 
