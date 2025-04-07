@@ -13,5 +13,6 @@ extern EFI_STATUS Status;
 
 void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable);
 BOOLEAN Printf(CHAR16 *fmt, ...);
+void PrintValues(int count, ...);
 
 #endif //_LIB_H
