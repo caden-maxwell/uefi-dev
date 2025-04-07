@@ -4,7 +4,7 @@
 EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     (void)ImageHandle; // Unused for now
 
-    init_global_vars(SystemTable);
+    InitGlobalVars(SystemTable);
 
     // Clear screen, set cursor position to (0,0), etc...
     Status = cOut->Reset(cOut, FALSE);
@@ -12,6 +12,8 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     // Set colors
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
     cOut->ClearScreen(cOut);
+
+    Printf(u"%s", u"HELLO, WORLD!");
 
     cOut->OutputString(cOut, u"--------------------------------\r\n");
     cOut->OutputString(cOut, u"---- WELCOME TO MY UEFI APP ----\r\n");
@@ -28,9 +30,10 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     
     // Print it
     CHAR16 str[2] = { Key.UnicodeChar, u'\0' };
-    cOut->OutputString(cOut, u"You pressed: ");
-    cOut->OutputString(cOut, &str);
-    cOut->OutputString(cOut, u"\r\n");
+    cOut->OutputString(cOut, u"You pressed: '");
+    cOut->OutputString(cOut, &Key.UnicodeChar);
+    cOut->OutputString(cOut, u"'\r\n");
+
 
     // Wait until user presses key to exit
     cOut->OutputString(cOut, u"Press any key to exit...\r\n");
