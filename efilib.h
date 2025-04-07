@@ -12,7 +12,7 @@ extern EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 extern EFI_STATUS Status;
 
 void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable);
-BOOLEAN Printf(CHAR16 *fmt, ...);
-void PrintValues(int count, ...);
+void Printf(CHAR16 *fmt, ...);
+void PutChar(CHAR16 ch);
 
 #endif //_LIB_H

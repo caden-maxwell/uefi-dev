@@ -23,75 +23,58 @@ void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable) {
 // ===================================
 // ===== Print formatted strings =====
 // ===================================
-BOOLEAN Printf(CHAR16 *fmt, ...) {
+void Printf(CHAR16 *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
     CHAR16 ch;
-    CHAR16 str_arr[2]; // Implement memset so we can shorthand this
-    str_arr[0] = u'\0';
-    str_arr[1] = u'\0';
-    CHAR16 *str = str_arr;
     for (UINTN i=0; fmt[i] != u'\0'; i++) {
         ch = fmt[i];
         // If we see a format specifier '%'...
         if (ch == u'%') {
-            i++;
+            ch = fmt[++i];
             // Check the kind of format specifier
-            switch (fmt[i])
+            switch (ch)
             {
                 case u's': // '%s' -- string
                 {
-                    CHAR16 *arg = va_arg(args, CHAR16 *);
-                    cOut->OutputString(cOut, arg);
+                    cOut->OutputString(cOut, va_arg(args, CHAR16 *));
                     break;
                 }
                 case u'c': // '%c' -- character
                 {
-                    // ConOut->OutputString expects a null-terminated CHAR16*. We are
-                    //  getting a CHAR16, so we need to handle it slightly differently
-                    CHAR16 arg = (CHAR16)va_arg(args, UINTN);
-                    CHAR16 ch_arr[2];
-                    ch_arr[0] = arg;
-                    ch_arr[1] = u'\0';
-                    CHAR16 *str2 = ch_arr;
-                    cOut->OutputString(cOut, str2);
+                    PutChar((CHAR16)va_arg(args, UINTN));
+                    break;
+                }
+                case u'%': // '%%' -- literal %
+                {
+                    PutChar('%');
                     break;
                 }
                 case u'd': // '%d' -- integer
-                {
-                    UINTN arg = va_arg(args, UINTN);
-                    (void)arg;
-                    break;
-                }
                 case u'x': // '%x' -- hexadecimal
                 {
-                    UINTN arg = va_arg(args, UINTN);
-                    (void)arg;
+                    va_arg(args, UINTN); // Unused as of now
+                    Printf(u"(Format specifier '%%%c' is not yet implemented)", ch);
                     break;
                 }
-                default: cOut->OutputString(cOut, u"(INVALID FORMAT SPECIFIER)");
+                default: {
+                    va_arg(args, UINTN);
+                    Printf(u"(INVALID FORMAT SPECIFIER: '%%%c')", ch);
+                }
             }
         }
         // Otherwise, print the char
         else
-        {
-            str[0] = fmt[i];
-            cOut->OutputString(cOut, str);
-        }
+            PutChar(ch);
     }
 
     va_end(args);
-    return TRUE;
 }
 
-void PrintValues(int count, ...) {
-    va_list args;
-    va_start(args, count);
-
-    for (int i = 0; i < count; i++) {
-        CHAR16 *str = va_arg(args, CHAR16 *);
-        cOut->OutputString(cOut, str);
-    }
-    va_end(args);
+void PutChar(CHAR16 ch) {
+    CHAR16 str_arr[2]; // Implement memset so we can shorthand this
+    str_arr[0] = ch;
+    str_arr[1] = u'\0';
+    cOut->OutputString(cOut, str_arr);
 }
