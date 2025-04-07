@@ -46,17 +46,30 @@ BOOLEAN Printf(CHAR16 *fmt, ...) {
                 CHAR16 *arg = va_arg(args, CHAR16 *);
                 cOut->OutputString(cOut, arg);
             }
+            // If it's a char:
+            else if (ch == u'c')
+            {
+                // Get the next arg as an int, and print the int 
+                CHAR16 arg = (CHAR16)va_arg(args, UINTN);
+                CHAR16 ch_arr[2];
+                ch_arr[0] = arg;
+                ch_arr[1] = u'\0';
+                CHAR16 *str2 = ch_arr;
+                cOut->OutputString(cOut, str2);
+            }
             // If it is an int:
             else if (ch == u'd')
             {
                 // Get the next arg as an int, and print the int 
+                UINTN arg = va_arg(args, UINTN);
+                (void)arg;
             }
             else
                 cOut->OutputString(cOut, u"(INVALID FORMAT SPECIFIER)");
-
-
+        }
         // Otherwise, print the char
-        } else {
+        else
+        {
             str[0] = fmt[i];
             cOut->OutputString(cOut, str);
         }

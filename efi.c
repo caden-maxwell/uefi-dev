@@ -13,28 +13,22 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
     cOut->ClearScreen(cOut);
 
-    Printf(u"GREETING: '%s'\r\n\n", u"HELLO, WORLD!");
-
-    cOut->OutputString(cOut, u"--------------------------------\r\n");
-    cOut->OutputString(cOut, u"---- WELCOME TO MY UEFI APP ----\r\n");
-    cOut->OutputString(cOut, u"--------------------------------\r\n\n");
-
-    cOut->OutputString(cOut, u"Press a key...\r\n");
+    Printf(u"--------------------------------\r\n");
+    Printf(u"---- WELCOME TO MY UEFI APP ----\r\n");
+    Printf(u"--------------------------------\r\n\n");
+    Printf(u"GREETING: '%s'\r\n", u"HELLO, WORLD!");
+    Printf(u"Press any key for input...\r\n");
 
     // Wait until key has been pressed
     BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
 
-    // Read in the keystroke
+    // Read in the keystroke and print it
     EFI_INPUT_KEY Key;
     cIn->ReadKeyStroke(cIn, &Key);
-    
-    // Print it
-    cOut->OutputString(cOut, u"You pressed: ");
-    cOut->OutputString(cOut, &Key.UnicodeChar);
-    cOut->OutputString(cOut, u"\r\n");
+    Printf(u"You pressed: '%c' --- %s!\r\n", Key.UnicodeChar, u"Congratulations");
 
     // Wait until user presses key to exit
-    cOut->OutputString(cOut, u"Press any key to exit...\r\n");
+    Printf(u"Press any key to exit...\r\n");
     BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
 
     return EFI_SUCCESS;
