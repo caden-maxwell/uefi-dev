@@ -13,7 +13,7 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
     cOut->ClearScreen(cOut);
 
-    Printf(u"%s", u"HELLO, WORLD!");
+    Printf(u"GREETING: '%s'\r\n\n", u"HELLO, WORLD!");
 
     cOut->OutputString(cOut, u"--------------------------------\r\n");
     cOut->OutputString(cOut, u"---- WELCOME TO MY UEFI APP ----\r\n");
