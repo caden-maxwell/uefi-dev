@@ -1,10 +1,6 @@
 #include "efi.h"
-#include "mylib.h"
-#include <stdarg.h>
+#include "efilib.h"
 
-// ================
-// ===== Main =====
-// ================
 EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     (void)ImageHandle; // Unused for now
 
@@ -31,8 +27,7 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cIn->ReadKeyStroke(cIn, &Key);
     
     // Print it
-    CHAR16 str[2];
-    str[0] = Key.UnicodeChar, str[1] = u'\0';
+    CHAR16 str[2] = { Key.UnicodeChar, u'\0' };
     cOut->OutputString(cOut, u"You pressed: ");
     cOut->OutputString(cOut, &str);
     cOut->OutputString(cOut, u"\r\n");

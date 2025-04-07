@@ -1,5 +1,6 @@
 #include "efi.h"
-#include "mylib.h"
+#include "efilib.h"
+#include <stdarg.h>
 
 EFI_SYSTEM_TABLE  *ST;
 EFI_BOOT_SERVICES *BS;
@@ -9,7 +10,7 @@ EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 EFI_STATUS Status;
 
 // =======================================
-// ===== Initialize Global Variables =====
+// ===== Initialize global variables =====
 // =======================================
 void init_global_vars(EFI_SYSTEM_TABLE *SystemTable) {
     ST = SystemTable;
@@ -19,6 +20,10 @@ void init_global_vars(EFI_SYSTEM_TABLE *SystemTable) {
     cOut = ST->ConOut;
 }
 
+// ===================================
+// ===== Print formatted strings =====
+// ===================================
 BOOLEAN Printf(CHAR16 *fmt, ...) {
+    (void)fmt;
     return TRUE;
 }

@@ -1,4 +1,4 @@
-SOURCES = efi.c mylib.c
+SOURCES = efi.c efilib.c
 OBJS    = $(SOURCES:.c=.o)
 DEPENDS = $(OBJS:.o=.d)
 TARGET  = BOOTX64.EFI
