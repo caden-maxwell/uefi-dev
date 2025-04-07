@@ -22,9 +22,10 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     Printf(u"- s: Hello, %s\r\n", u"world!");
     Printf(u"- c: '%c' is the first letter of the alphabet.\r\n", 'A');
     Printf(u"- d: There are %d feet in a mile.\r\n", 5280);
-    Printf(u"- x: %d is %x in hexadecimal.\r\n", 100, 100);
+    Printf(u"- d: MAX_INT: %d\r\n", 2147483647);
+    Printf(u"- u x: %u is 0x%x in hexadecimal.\r\n", 0xDEADBEEF, 0xDEADBEEF);
     Printf(u"- r: This %r ain't right...\r\n", 0);
-    Printf(u"- s c d x h: %s %c %d %x %h\r\n", u"Hello", 'Z', 100, 16, 23);
+    Printf(u"- s c d u x h: %s %c %u %d 0x%x %h\r\n", u"Hello", 'Z', 0xFFFFFFFF, 0x1000, 3987, 23);
     Printf(u"------------------------------\r\n\n");
 
     // Wait until key has been pressed

@@ -12,6 +12,8 @@ extern EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 extern EFI_STATUS Status;
 
 void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable);
+void PrintInt(INT32 num);
+void PrintHex(UINT32 num);
 void Printf(CHAR16 *fmt, ...);
 void PutChar(CHAR16 ch);
 
