@@ -1,4 +1,4 @@
-SOURCES = efi.c
+SOURCES = efi.c mylib.c
 OBJS    = $(SOURCES:.c=.o)
 DEPENDS = $(OBJS:.o=.d)
 TARGET  = BOOTX64.EFI
@@ -12,7 +12,7 @@ QEMU_LOG = qemu.log
 #LDFLAGS = \
  	-nostdlib \
   	-Wl,--subsystem,10 \
-  	-e efi_main
+  	-e UefiEntry
 
 CC = clang -target x86_64-unknown-windows
 LDFLAGS = \
@@ -20,7 +20,7 @@ LDFLAGS = \
 	-target x86_64-unknown-windows \
 	-fuse-ld=lld-link \
 	-Wl,-subsystem:efi_application \
-	-Wl,-entry:efi_main
+	-Wl,-entry:UefiEntry
 
 CFLAGS = \
 	-std=c17 \
@@ -33,11 +33,8 @@ CFLAGS = \
 
 all: $(IMG)
 
-$(OBJS): $(SOURCES)
-	$(CC) -c $(CFLAGS) $< -o $@
-
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $< -o $@
+	$(CC) $(LDFLAGS) $? -o $@
 
 -include $(DEPENDS)
 

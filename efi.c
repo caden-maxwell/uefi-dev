@@ -1,14 +1,14 @@
 #include "efi.h"
+#include "mylib.h"
+#include <stdarg.h>
 
-EFI_STATUS Status;
-
-EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
+// ================
+// ===== Main =====
+// ================
+EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     (void)ImageHandle; // Unused for now
 
-    EFI_SYSTEM_TABLE  *ST = SystemTable;
-    EFI_BOOT_SERVICES *BS = ST->BootServices;
-    EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut = ST->ConOut;
-    EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn = ST->ConIn;
+    init_global_vars(SystemTable);
 
     // Clear screen, set cursor position to (0,0), etc...
     Status = cOut->Reset(cOut, FALSE);
@@ -21,13 +21,6 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cOut->OutputString(cOut, u"---- WELCOME TO MY UEFI APP ----\r\n");
     cOut->OutputString(cOut, u"--------------------------------\r\n\n");
 
-    cOut->OutputString(cOut, u"TEXT MODE: ");
-    CHAR16 mode = (CHAR16)(cOut->Mode->Mode + 48);
-    CHAR16 mode_str[2] = {mode, u'\0'};
-    cOut->OutputString(cOut, mode_str);
-    cOut->OutputString(cOut, u"\r\n");
-
-
     cOut->OutputString(cOut, u"Press a key...\r\n");
 
     // Wait until key has been pressed
@@ -38,10 +31,11 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cIn->ReadKeyStroke(cIn, &Key);
     
     // Print it
-    CHAR16 str[2] = {Key.UnicodeChar, u'\0'};
-    cOut->OutputString(cOut, u"You pressed: '");
+    CHAR16 str[2];
+    str[0] = Key.UnicodeChar, str[1] = u'\0';
+    cOut->OutputString(cOut, u"You pressed: ");
     cOut->OutputString(cOut, &str);
-    cOut->OutputString(cOut, u"'\r\n");
+    cOut->OutputString(cOut, u"\r\n");
 
     // Wait until user presses key to exit
     cOut->OutputString(cOut, u"Press any key to exit...\r\n");
