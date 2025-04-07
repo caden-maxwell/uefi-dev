@@ -38,34 +38,40 @@ BOOLEAN Printf(CHAR16 *fmt, ...) {
         if (ch == u'%') {
             i++;
             // Check the kind of format specifier
-            // If it's a string:
-            ch = fmt[i];
-            if (ch == u's')
+            switch (fmt[i])
             {
-                // Get the next arg as a string, and print the string
-                CHAR16 *arg = va_arg(args, CHAR16 *);
-                cOut->OutputString(cOut, arg);
+                case u's': // '%s' -- string
+                {
+                    CHAR16 *arg = va_arg(args, CHAR16 *);
+                    cOut->OutputString(cOut, arg);
+                    break;
+                }
+                case u'c': // '%c' -- character
+                {
+                    // ConOut->OutputString expects a null-terminated CHAR16*. We are
+                    //  getting a CHAR16, so we need to handle it slightly differently
+                    CHAR16 arg = (CHAR16)va_arg(args, UINTN);
+                    CHAR16 ch_arr[2];
+                    ch_arr[0] = arg;
+                    ch_arr[1] = u'\0';
+                    CHAR16 *str2 = ch_arr;
+                    cOut->OutputString(cOut, str2);
+                    break;
+                }
+                case u'd': // '%d' -- integer
+                {
+                    UINTN arg = va_arg(args, UINTN);
+                    (void)arg;
+                    break;
+                }
+                case u'x': // '%x' -- hexadecimal
+                {
+                    UINTN arg = va_arg(args, UINTN);
+                    (void)arg;
+                    break;
+                }
+                default: cOut->OutputString(cOut, u"(INVALID FORMAT SPECIFIER)");
             }
-            // If it's a char:
-            else if (ch == u'c')
-            {
-                // Get the next arg as an int, and print the int 
-                CHAR16 arg = (CHAR16)va_arg(args, UINTN);
-                CHAR16 ch_arr[2];
-                ch_arr[0] = arg;
-                ch_arr[1] = u'\0';
-                CHAR16 *str2 = ch_arr;
-                cOut->OutputString(cOut, str2);
-            }
-            // If it is an int:
-            else if (ch == u'd')
-            {
-                // Get the next arg as an int, and print the int 
-                UINTN arg = va_arg(args, UINTN);
-                (void)arg;
-            }
-            else
-                cOut->OutputString(cOut, u"(INVALID FORMAT SPECIFIER)");
         }
         // Otherwise, print the char
         else
