@@ -20,6 +20,74 @@ void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable) {
     cOut = ST->ConOut;
 }
 
+void PrintInt(INT32 num)
+{
+    CHAR16 buffer[12]; // 1 sign char, 10 num chars, 1 null-terminator
+
+    BOOLEAN negative = num < 0;
+    if (negative) num = -num;
+
+    UINTN i = 0;
+    do {
+        buffer[i++] = num % 10 + '0';
+        num /= 10;
+    } while (num > 0);
+
+    if (negative) buffer[i++] = u'-';
+    buffer[i--] = u'\0';
+
+    for (UINTN j=0; j < i; j++, i--) {
+        CHAR16 temp = buffer[i];
+        buffer[i] = buffer[j];
+        buffer[j] = temp;
+    }
+
+    cOut->OutputString(cOut, buffer);
+}
+
+void PrintUint(UINT32 num)
+{
+    CHAR16 buffer[11]; // 10 num chars, 1 null-terminator
+
+    UINTN i = 0;
+    do {
+        buffer[i++] = num % 10 + '0';
+        num /= 10;
+    } while (num > 0);
+
+    buffer[i--] = u'\0';
+
+    for (UINTN j=0; j < i; j++, i--) {
+        CHAR16 temp = buffer[i];
+        buffer[i] = buffer[j];
+        buffer[j] = temp;
+    }
+
+    cOut->OutputString(cOut, buffer);
+}
+
+void PrintHex(UINT32 num) // Expects an unsigned int
+{
+    CHAR16 *digits = u"0123456789ABCDEF";
+    CHAR16 buffer[9]; // 8 hex chars, 1 null-terminator
+
+    UINTN i = 0;
+    do {
+        buffer[i++] = digits[num % 16];
+        num /= 16;
+    } while (num > 0);
+
+    buffer[i--] = u'\0';
+
+    for (UINTN j=0; j < i; j++, i--) {
+        CHAR16 temp = buffer[i];
+        buffer[i] = buffer[j];
+        buffer[j] = temp;
+    }
+
+    cOut->OutputString(cOut, buffer);
+}
+
 // ===================================
 // ===== Print formatted strings =====
 // ===================================
@@ -48,13 +116,27 @@ void Printf(CHAR16 *fmt, ...) {
                 }
                 case u'%': // '%%' -- literal %
                 {
-                    PutChar('%');
+                    PutChar(u'%');
                     break;
                 }
-                case u'd': // '%d' -- integer
+                case u'd': // '%d' -- signed int
+                {
+                    PrintInt(va_arg(args, INT32));
+                    break;
+                }
                 case u'x': // '%x' -- hexadecimal
                 {
-                    va_arg(args, UINTN); // Unused as of now
+                    PrintHex(va_arg(args, UINT32));
+                    break;
+                }
+                case u'u': // '%u' -- unsigned int
+                {
+                    PrintUint(va_arg(args, UINT32));
+                    break;
+                }
+                case u'h':
+                {
+                    va_arg(args, UINTN); // Still need to consume an arg so we can continue
                     Printf(u"(Format specifier '%%%c' is not yet implemented)", ch);
                     break;
                 }
