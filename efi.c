@@ -29,11 +29,9 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cIn->ReadKeyStroke(cIn, &Key);
     
     // Print it
-    CHAR16 str[2] = { Key.UnicodeChar, u'\0' };
-    cOut->OutputString(cOut, u"You pressed: '");
+    cOut->OutputString(cOut, u"You pressed: ");
     cOut->OutputString(cOut, &Key.UnicodeChar);
-    cOut->OutputString(cOut, u"'\r\n");
-
+    cOut->OutputString(cOut, u"\r\n");
 
     // Wait until user presses key to exit
     cOut->OutputString(cOut, u"Press any key to exit...\r\n");
