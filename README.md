@@ -4,7 +4,7 @@ I've never really understood the difference between things like BIOS, UEFI, boot
 
 ## Requirements:
 - `make`
-- `clang`
+- `clang` or `x86_64-w64-mingw32-gcc`
 - `lld`
 - `qemu-system-x86_64`
 - `mtools`
@@ -24,16 +24,11 @@ Runs the image in QEMU with the required OVMF firmware.
 
 ### `make clean`:
 
-Removes all generated files. Files removed include:
-- `*.img`
-- `*.efi`
-- `*.so`
-- `*.o`
+Removes all generated files.
 
 ### `make fresh`:
 
-This makes a fresh build, which is equivalent to running:
+Equivalent to:
 ```bash
-$ make clean
-$ make
+$ make clean all
 ```
