@@ -12,7 +12,7 @@ EFI_STATUS Status;
 // =======================================
 // ===== Initialize global variables =====
 // =======================================
-void init_global_vars(EFI_SYSTEM_TABLE *SystemTable) {
+void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable) {
     ST = SystemTable;
     BS = ST->BootServices;
     RS = ST->RuntimeServices;

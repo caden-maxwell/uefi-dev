@@ -29,12 +29,12 @@ CFLAGS = \
 	-MMD \
 	-ffreestanding
 
-.PHONY: all run clean nuke fresh 
+.PHONY: all run clean fresh 
 
 all: $(IMG)
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $? -o $@
+	$(CC) $(LDFLAGS) $^ -o $@
 
 -include $(DEPENDS)
 
