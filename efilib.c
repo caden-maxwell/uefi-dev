@@ -1,4 +1,3 @@
-#include "efi.h"
 #include "efilib.h"
 #include <stdarg.h>
 
@@ -18,6 +17,12 @@ void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable) {
     RS = ST->RuntimeServices;
     cIn = ST->ConIn;
     cOut = ST->ConOut;
+}
+
+void PutChar(CHAR16 ch) {
+    // ConOut->OutputString expects a null-terminated string of chars
+    CHAR16 str_arr[2] = { ch, u'\0' };
+    cOut->OutputString(cOut, str_arr);
 }
 
 void PrintInt(INT32 num)
@@ -140,7 +145,8 @@ void Printf(CHAR16 *fmt, ...) {
                     Printf(u"(Format specifier '%%%c' is not yet implemented)", ch);
                     break;
                 }
-                default: {
+                default:
+                {
                     va_arg(args, UINTN);
                     Printf(u"(INVALID FORMAT SPECIFIER: '%%%c')", ch);
                 }
@@ -152,11 +158,4 @@ void Printf(CHAR16 *fmt, ...) {
     }
 
     va_end(args);
-}
-
-void PutChar(CHAR16 ch) {
-    CHAR16 str_arr[2]; // Implement memset so we can shorthand this
-    str_arr[0] = ch;
-    str_arr[1] = u'\0';
-    cOut->OutputString(cOut, str_arr);
 }
