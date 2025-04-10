@@ -1,5 +1,14 @@
 #include "efilib.h"
 
+INT32 shutdown_count = 15;
+VOID NotificationCallback(EFI_EVENT Event, VOID *Context) {
+    (VOID)Event;
+    (VOID)Context;
+    Printf(u"%d  \r", shutdown_count);
+    if (shutdown_count-- < 1)
+        ST->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+}
+
 EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     (void)ImageHandle; // Unused for now
 
@@ -27,18 +36,18 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     Printf(u"- r: This %r ain't right...\r\n", 0);
     Printf(u"------------------------------\r\n\n");
 
-    // Wait until key has been pressed
-    Printf(u"Press any key for input...\r\n");
-    BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
+    EFI_EVENT Timer;
+    BS->CreateEvent(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_CALLBACK, NotificationCallback, NULL, &Timer);
 
-    // Read in the keystroke and print it
-    EFI_INPUT_KEY Key;
-    cIn->ReadKeyStroke(cIn, &Key);
-    Printf(u"You pressed: '%c'\r\n", Key.UnicodeChar);
+    UINT32 units_per_sec = 10000000;
+    BS->SetTimer(Timer, TimerPeriodic, 1 * units_per_sec);
 
-    // Wait until user presses key to exit
     Printf(u"Press any key to exit...\r\n");
-    BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
+    BS->SignalEvent(Timer);
+    BS->WaitForEvent(1, &cIn->WaitForKey , NULL);
+
+    BS->SetTimer(Timer, TimerCancel, 0);
+    BS->CloseEvent(Timer);
 
     return EFI_SUCCESS;
 }
