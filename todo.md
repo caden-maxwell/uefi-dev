@@ -1,0 +1,1 @@
+Make sure struct members are in order of how they appear in spec. i mightve accidentally moved some around when commenting/uncommenting
