@@ -11,7 +11,8 @@ EFI_STATUS Status;
 // =======================================
 // ===== Initialize global variables =====
 // =======================================
-void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable) {
+void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
+{
     ST = SystemTable;
     BS = ST->BootServices;
     RS = ST->RuntimeServices;
@@ -19,12 +20,15 @@ void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable) {
     cOut = ST->ConOut;
 }
 
-void PutChar(CHAR16 ch) {
+void PutChar(CHAR16 ch)
+{
     // ConOut->OutputString expects a null-terminated string of chars
     CHAR16 str_arr[2] = { ch, u'\0' };
     cOut->OutputString(cOut, str_arr);
 }
 
+// Expand upon PrintXXX in the future to use any type of int (byte, short, int, long)
+// Buffer size would be ceil(log_(base)^(2^num_bits - 1)) + 1
 void PrintInt(INT32 num)
 {
     CHAR16 buffer[12]; // 1 sign char, 10 num chars, 1 null-terminator
@@ -41,7 +45,8 @@ void PrintInt(INT32 num)
     if (negative) buffer[i++] = u'-';
     buffer[i--] = u'\0';
 
-    for (UINTN j=0; j < i; j++, i--) {
+    for (UINTN j=0; j < i; j++, i--)
+    {
         CHAR16 temp = buffer[i];
         buffer[i] = buffer[j];
         buffer[j] = temp;
@@ -62,7 +67,8 @@ void PrintUint(UINT32 num)
 
     buffer[i--] = u'\0';
 
-    for (UINTN j=0; j < i; j++, i--) {
+    for (UINTN j=0; j < i; j++, i--)
+    {
         CHAR16 temp = buffer[i];
         buffer[i] = buffer[j];
         buffer[j] = temp;
@@ -84,7 +90,8 @@ void PrintHex(UINT32 num) // Expects an unsigned int
 
     buffer[i--] = u'\0';
 
-    for (UINTN j=0; j < i; j++, i--) {
+    for (UINTN j=0; j < i; j++, i--)
+    {
         CHAR16 temp = buffer[i];
         buffer[i] = buffer[j];
         buffer[j] = temp;
@@ -96,15 +103,18 @@ void PrintHex(UINT32 num) // Expects an unsigned int
 // ===================================
 // ===== Print formatted strings =====
 // ===================================
-void Printf(CHAR16 *fmt, ...) {
+void Printf(CHAR16 *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
 
     CHAR16 ch;
-    for (UINTN i=0; fmt[i] != u'\0'; i++) {
+    for (UINTN i=0; fmt[i] != u'\0'; i++)
+    {
         ch = fmt[i];
         // If we see a format specifier '%'...
-        if (ch == u'%') {
+        if (ch == u'%')
+        {
             ch = fmt[++i];
             // Check the kind of format specifier
             switch (ch)

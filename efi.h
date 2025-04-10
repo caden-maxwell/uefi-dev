@@ -284,18 +284,161 @@ typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
 // ------ EFI_RUNTIME_SERVICES ------
 // ----------------------------------
 
-typedef struct _EFI_RUNTIME_SERVICES EFI_RUNTIME_SERVICES;
+typedef enum {
+    EfiResetCold,
+    EfiResetWarm,
+    EfiResetShutdown,
+    EfiResetPlatformSpecific
+ } EFI_RESET_TYPE;
+
+typedef
+VOID
+(EFIAPI *EFI_RESET_SYSTEM) (
+    IN EFI_RESET_TYPE          ResetType,
+    IN EFI_STATUS              ResetStatus,
+    IN UINTN                   DataSize,
+    IN VOID                    *ResetData OPTIONAL
+);
+
+typedef struct {
+    EFI_TABLE_HEADER                 Hdr;
+
+    //
+    // Time Services
+    //
+    // EFI_GET_TIME                     GetTime;
+    // EFI_SET_TIME                     SetTime;
+    // EFI_GET_WAKEUP_TIME              GetWakeupTime;
+    // EFI_SET_WAKEUP_TIME              SetWakeupTime;
+    void *GetTime;
+    void *SetTime;
+    void *GetWakeupTime;
+    void *SetWakeupTime;
+
+    //
+    // Virtual Memory Services
+    //
+    // EFI_SET_VIRTUAL_ADDRESS_MAP      SetVirtualAddressMap;
+    // EFI_CONVERT_POINTER                ConvertPointer;
+    void *SetVirtualAddressMap;
+    void *ConvertPointer;
+
+    //
+    // Variable Services
+    //
+    // EFI_GET_VARIABLE                 GetVariable;
+    // EFI_GET_NEXT_VARIABLE_NAME       GetNextVariableName;
+    // EFI_SET_VARIABLE                 SetVariable;
+    void *GetVariable;
+    void *GetNextVariableName;
+    void *SetVariable;
+
+
+    //
+    // Miscellaneous Services
+    //
+    // EFI_GET_NEXT_HIGH_MONO_COUNT     GetNextHighMonotonicCount;
+    void *GetNextHighMonotonicCount;
+    EFI_RESET_SYSTEM                 ResetSystem;
+
+    //
+    // UEFI 2.0 Capsule Services
+    //
+    // EFI_UPDATE_CAPSULE               UpdateCapsule;
+    // EFI_QUERY_CAPSULE_CAPABILITIES   QueryCapsuleCapabilities;
+    void *UpdateCapsule;
+    void *QueryCapsuleCapabilities;
+
+
+    //
+    // Miscellaneous UEFI 2.0 Service
+    //
+    // EFI_QUERY_VARIABLE_INFO          QueryVariableInfo;
+    void *QueryVariableInfo;
+} EFI_RUNTIME_SERVICES;
+
 
 // -------------------------------
 // ------ EFI_BOOT_SERVICES ------
 // -------------------------------
 
+// UEFI Spec 7.1.1
+typedef
+VOID
+(EFIAPI *EFI_EVENT_NOTIFY) (
+    IN EFI_EVENT Event,
+    IN VOID      *Context
+);
+
+// These types can be OR'd together as needed - for example,
+// EVT_TIMER might be OR'd with EVT_NOTIFY_WAIT or EVT_NOTIFY_SIGNAL
+#define EVT_TIMER                            0x80000000
+#define EVT_RUNTIME                          0x40000000
+
+#define EVT_NOTIFY_WAIT                      0x00000100
+#define EVT_NOTIFY_SIGNAL                    0x00000200
+
+#define EVT_SIGNAL_EXIT_BOOT_SERVICES        0x00000201
+#define EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE    0x60000202
+        
+typedef
+EFI_STATUS
+(EFIAPI *EFI_CREATE_EVENT) (
+    IN UINT32           Type,
+    IN EFI_TPL          NotifyTpl,
+    IN EFI_EVENT_NOTIFY NotifyFunction, OPTIONAL
+    IN VOID             *NotifyContext, OPTIONAL
+    OUT EFI_EVENT       *Event
+);
+
+// UEFI Spec 7.1.3
+typedef
+EFI_STATUS
+(EFIAPI *EFI_CLOSE_EVENT) (
+    IN EFI_EVENT Event
+);
+
+// UEFI Spec 7.1.4
+typedef
+EFI_STATUS
+(EFIAPI *EFI_SIGNAL_EVENT) (
+    IN EFI_EVENT Event
+);
+
+// UEFI Spec 7.1.5
 typedef
 EFI_STATUS
 (EFIAPI *EFI_WAIT_FOR_EVENT) (
     IN UINTN     NumberOfEvents,
     IN EFI_EVENT *Event,
     OUT UINTN    *Index
+);
+
+// UEFI Spec 7.1.7
+typedef enum {
+    TimerCancel,
+    TimerPeriodic,
+    TimerRelative
+} EFI_TIMER_DELAY;
+
+typedef
+EFI_STATUS
+(EFIAPI *EFI_SET_TIMER) (
+    IN EFI_EVENT       Event,
+    IN EFI_TIMER_DELAY Type,
+    IN UINT64          TriggerTime
+);
+
+// UEFI Spec 7.1.8
+#define TPL_APPLICATION    4
+#define TPL_CALLBACK       8
+#define TPL_NOTIFY         16
+#define TPL_HIGH_LEVEL     31
+
+typedef
+EFI_TPL
+(EFIAPI   *EFI_RAISE_TPL) (
+    IN EFI_TPL NewTpl
 );
 
 typedef struct {
@@ -326,17 +469,12 @@ typedef struct {
     //
     // Event & Timer Services
     //
-    // EFI_CREATE_EVENT     CreateEvent;    // EFI 1.0+
-    // EFI_SET_TIMER        SetTimer;       // EFI 1.0+
-    // EFI_WAIT_FOR_EVENT   WaitForEvent;   // EFI 1.0+
-    // EFI_SIGNAL_EVENT     SignalEvent;    // EFI 1.0+
-    // EFI_CLOSE_EVENT      CloseEvent;     // EFI 1.0+
-    // EFI_CHECK_EVENT      CheckEvent;     // EFI 1.0+
-    void *CreateEvent;    // EFI 1.0+
-    void *SetTimer;       // EFI 1.0+
+    EFI_CREATE_EVENT     CreateEvent;    // EFI 1.0+
+    EFI_SET_TIMER        SetTimer;       // EFI 1.0+
     EFI_WAIT_FOR_EVENT   WaitForEvent;   // EFI 1.0+
-    void *SignalEvent;    // EFI 1.0+
-    void *CloseEvent;     // EFI 1.0+
+    EFI_SIGNAL_EVENT     SignalEvent;    // EFI 1.0+
+    EFI_CLOSE_EVENT      CloseEvent;     // EFI 1.0+
+    // EFI_CHECK_EVENT      CheckEvent;     // EFI 1.0+
     void *CheckEvent;     // EFI 1.0+
 
     //
@@ -346,7 +484,7 @@ typedef struct {
     // EFI_REINSTALL_PROTOCOL_INTERFACE   ReinstallProtocolInterface;          // EFI 1.0+
     // EFI_UNINSTALL_PROTOCOL_INTERFACE   UninstallProtocolInterface;          // EFI 1.0+
     // EFI_HANDLE_PROTOCOL                HandleProtocol;                      // EFI 1.0+
-    // VOID*   Reserved;    // EFI 1.0+
+    VOID*   Reserved;    // EFI 1.0+
     // EFI_REGISTER_PROTOCOL_NOTIFY       RegisterProtocolNotify;              // EFI  1.0+
     // EFI_LOCATE_HANDLE                  LocateHandle;                        // EFI 1.0+
     // EFI_LOCATE_DEVICE_PATH             LocateDevicePath;                    // EFI 1.0+
@@ -355,7 +493,6 @@ typedef struct {
     void *ReinstallProtocolInterface;          // EFI 1.0+
     void *UninstallProtocolInterface;          // EFI 1.0+
     void *HandleProtocol;                      // EFI 1.0+
-    VOID*   Reserved;    // EFI 1.0+
     void *RegisterProtocolNotify;              // EFI  1.0+
     void *LocateHandle;                        // EFI 1.0+
     void *LocateDevicePath;                    // EFI 1.0+
