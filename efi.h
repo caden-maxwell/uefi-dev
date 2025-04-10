@@ -447,9 +447,8 @@ typedef struct {
     //
     // Task Priority Services
     //
-    // EFI_RAISE_TPL        RaiseTPL;       // EFI 1.0+
+    EFI_RAISE_TPL        RaiseTPL;       // EFI 1.0+
     // EFI_RESTORE_TPL      RestoreTPL;     // EFI 1.0+
-    void *RaiseTPL;       // EFI 1.0+
     void *RestoreTPL;     // EFI 1.0+
 
     //
