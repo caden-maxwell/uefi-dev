@@ -483,7 +483,6 @@ typedef struct {
     // EFI_REINSTALL_PROTOCOL_INTERFACE   ReinstallProtocolInterface;          // EFI 1.0+
     // EFI_UNINSTALL_PROTOCOL_INTERFACE   UninstallProtocolInterface;          // EFI 1.0+
     // EFI_HANDLE_PROTOCOL                HandleProtocol;                      // EFI 1.0+
-    VOID*   Reserved;    // EFI 1.0+
     // EFI_REGISTER_PROTOCOL_NOTIFY       RegisterProtocolNotify;              // EFI  1.0+
     // EFI_LOCATE_HANDLE                  LocateHandle;                        // EFI 1.0+
     // EFI_LOCATE_DEVICE_PATH             LocateDevicePath;                    // EFI 1.0+
@@ -492,6 +491,7 @@ typedef struct {
     void *ReinstallProtocolInterface;          // EFI 1.0+
     void *UninstallProtocolInterface;          // EFI 1.0+
     void *HandleProtocol;                      // EFI 1.0+
+    VOID* Reserved;    // EFI 1.0+
     void *RegisterProtocolNotify;              // EFI  1.0+
     void *LocateHandle;                        // EFI 1.0+
     void *LocateDevicePath;                    // EFI 1.0+
@@ -500,7 +500,7 @@ typedef struct {
     //
     // Image Services
     //
-    // EFI_IMAGE_UNLOAD               LoadImage;        // EFI 1.0+
+    // EFI_IMAGE_LOAD                 LoadImage;        // EFI 1.0+
     // EFI_IMAGE_START                StartImage;       // EFI 1.0+
     // EFI_EXIT                       Exit;             // EFI 1.0+
     // EFI_IMAGE_UNLOAD               UnloadImage;      // EFI 1.0+
@@ -545,7 +545,7 @@ typedef struct {
     // EFI_PROTOCOLS_PER_HANDLE       ProtocolsPerHandle;     // EFI 1.1+
     // EFI_LOCATE_HANDLE_BUFFER       LocateHandleBuffer;     // EFI 1.1+
     // EFI_LOCATE_PROTOCOL            LocateProtocol;         // EFI 1.1+
-    // EFI_UNINSTALL_MULTIPLE_PROTOCOL_INTERFACES  InstallMultipleProtocolInterfaces;    // EFI 1.1+
+    // EFI_INSTALL_MULTIPLE_PROTOCOL_INTERFACES  InstallMultipleProtocolInterfaces;    // EFI 1.1+
     // EFI_UNINSTALL_MULTIPLE_PROTOCOL_INTERFACES UninstallMultipleProtocolInterfaces;   // EFI 1.1+*
     void *ProtocolsPerHandle;     // EFI 1.1+
     void *LocateHandleBuffer;     // EFI 1.1+
