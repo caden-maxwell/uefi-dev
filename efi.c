@@ -1,14 +1,5 @@
 #include "efilib.h"
 
-INT32 shutdown_count = 15;
-VOID NotificationCallback(EFI_EVENT Event, VOID *Context) {
-    (VOID)Event;
-    (VOID)Context;
-    Printf(u"%d  \r", shutdown_count);
-    if (shutdown_count-- < 1)
-        ST->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
-}
-
 EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     (void)ImageHandle; // Unused for now
 
@@ -25,29 +16,34 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     Printf(u"==== WELCOME TO MY UEFI APP ====\r\n");
     Printf(u"================================\r\n\n");
 
-    // Test printf
-    Printf(u"--- Testing format specifiers ---\r\n");
-    Printf(u"- s: Hello, %s\r\n", u"world!");
-    Printf(u"- c: '%c' is the first letter of the alphabet.\r\n", 'A');
-    Printf(u"- d: There are %d feet in a mile.\r\n", 5280);
-    Printf(u"- d: -MAX_INT: %d\r\n", -2147483647);
-    Printf(u"- u x: %u is 0x%x in hexadecimal.\r\n", 0xDEADBEEF, 0xDEADBEEF);
-    Printf(u"- s c d u x: %s %c %u %d 0x%x\r\n", u"Hello", 'Z', 0xFFFFFFFF, 0x1000, 4096);
-    Printf(u"- r: This %r ain't right...\r\n", 0);
-    Printf(u"------------------------------\r\n\n");
-
     EFI_EVENT Timer;
-    BS->CreateEvent(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_CALLBACK, NotificationCallback, NULL, &Timer);
+    BS->CreateEvent(EVT_TIMER, TPL_CALLBACK, NULL, NULL, &Timer);
 
     UINT32 units_per_sec = 10000000;
-    BS->SetTimer(Timer, TimerPeriodic, 1 * units_per_sec);
+    INT32 exit_seconds = 60;
+    BS->SetTimer(Timer, TimerPeriodic, 60 * units_per_sec);
 
-    Printf(u"Press any key to exit...\r\n");
-    BS->SignalEvent(Timer);
-    BS->WaitForEvent(1, &cIn->WaitForKey , NULL);
+    Printf(u"Exiting in %d seconds, or press any key to exit...\r\n", exit_seconds);
 
-    BS->SetTimer(Timer, TimerCancel, 0);
-    BS->CloseEvent(Timer);
+    EFI_EVENT Events[] = { Timer, cIn->WaitForKey };
+    
+    UINTN Index;
+    BS->WaitForEvent(2, Events, &Index);
+
+    EFI_INPUT_KEY Key;
+    cIn->ReadKeyStroke(cIn, &Key);
+
+    Printf(u"Event %d was fired: ", Index);
+    if (Index == 0)
+        Printf(u"Timer ran out.");
+    else
+        Printf(u"Key '%c' was pressed.", Key.UnicodeChar);
+
+
+    BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
+    cIn->ReadKeyStroke(cIn, &Key);
+
+    RS->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
 
     return EFI_SUCCESS;
 }

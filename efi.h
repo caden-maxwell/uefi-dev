@@ -43,7 +43,7 @@ typedef UINT8  EFI_IPv6_ADDRESS[16];
 typedef UINT8  ALIGNED4 EFI_IP_ADDRESS[16];
 
 // UEFI Spec. Appendix A
-typedef struct {
+typedef struct _EFI_GUID {
     UINT32 TimeLow;
     UINT16 TimeMid;
     UINT16 TimeHighAndVersion;
@@ -103,7 +103,7 @@ EFI_STATUS
 );
 
 // UEFI Spec 4.2.1
-typedef struct {
+typedef struct _EFI_TABLE_HEADER {
     UINT64 Signature;
     UINT32 Revision;
     UINT32 HeaderSize;
@@ -126,7 +126,7 @@ EFI_STATUS
 );
 
 // UEFI Spec 12.3.3
-typedef struct {
+typedef struct _EFI_INPUT_KEY {
     UINT16 ScanCode;
     CHAR16 UnicodeChar;
 } EFI_INPUT_KEY;
@@ -257,7 +257,7 @@ EFI_STATUS
 );
 
 // UEFI Spec 12.4.1
-typedef struct {
+typedef struct _SIMPLE_TEXT_OUTPUT_MODE {
     INT32   MaxMode;
     INT32   Mode;
     INT32   Attribute;
@@ -300,7 +300,7 @@ VOID
     IN VOID                    *ResetData OPTIONAL
 );
 
-typedef struct {
+typedef struct _EFI_RUNTIME_SERVICES {
     EFI_TABLE_HEADER                 Hdr;
 
     //
@@ -441,7 +441,7 @@ EFI_TPL
     IN EFI_TPL NewTpl
 );
 
-typedef struct {
+typedef struct _EFI_BOOT_SERVICES{
     EFI_TABLE_HEADER     Hdr;
 
     //

@@ -8,9 +8,6 @@ EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn;
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 EFI_STATUS Status;
 
-// =======================================
-// ===== Initialize global variables =====
-// =======================================
 void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
 {
     ST = SystemTable;
@@ -19,6 +16,10 @@ void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
     cIn = ST->ConIn;
     cOut = ST->ConOut;
 }
+
+// ===========================
+// ===== Print functions =====
+// ===========================
 
 void PutChar(CHAR16 ch)
 {
@@ -100,9 +101,6 @@ void PrintHex(UINT32 num) // Expects an unsigned int
     cOut->OutputString(cOut, buffer);
 }
 
-// ===================================
-// ===== Print formatted strings =====
-// ===================================
 void Printf(CHAR16 *fmt, ...)
 {
     va_list args;
