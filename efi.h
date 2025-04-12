@@ -284,6 +284,7 @@ typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
 // ------ EFI_RUNTIME_SERVICES ------
 // ----------------------------------
 
+// UEFI Spec 8.5.1
 typedef enum {
     EfiResetCold,
     EfiResetWarm,
@@ -291,6 +292,7 @@ typedef enum {
     EfiResetPlatformSpecific
  } EFI_RESET_TYPE;
 
+// UEFI Spec 8.5.1
 typedef
 VOID
 (EFIAPI *EFI_RESET_SYSTEM) (
@@ -300,6 +302,7 @@ VOID
     IN VOID                    *ResetData OPTIONAL
 );
 
+// UEFI Spec 4.5.1
 typedef struct _EFI_RUNTIME_SERVICES {
     EFI_TABLE_HEADER                 Hdr;
 
@@ -370,6 +373,7 @@ VOID
     IN VOID      *Context
 );
 
+// UEFI Spec 7.1.1
 // These types can be OR'd together as needed - for example,
 // EVT_TIMER might be OR'd with EVT_NOTIFY_WAIT or EVT_NOTIFY_SIGNAL
 #define EVT_TIMER                            0x80000000
@@ -381,6 +385,7 @@ VOID
 #define EVT_SIGNAL_EXIT_BOOT_SERVICES        0x00000201
 #define EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE    0x60000202
         
+// UEFI Spec 7.1.1
 typedef
 EFI_STATUS
 (EFIAPI *EFI_CREATE_EVENT) (
@@ -421,6 +426,7 @@ typedef enum {
     TimerRelative
 } EFI_TIMER_DELAY;
 
+// UEFI Spec 7.1.7
 typedef
 EFI_STATUS
 (EFIAPI *EFI_SET_TIMER) (
@@ -435,12 +441,14 @@ EFI_STATUS
 #define TPL_NOTIFY         16
 #define TPL_HIGH_LEVEL     31
 
+// UEFI Spec 7.1.8
 typedef
 EFI_TPL
 (EFIAPI   *EFI_RAISE_TPL) (
     IN EFI_TPL NewTpl
 );
 
+// UEFI Spec 4.4.1
 typedef struct _EFI_BOOT_SERVICES{
     EFI_TABLE_HEADER     Hdr;
 
