@@ -108,9 +108,9 @@ typedef struct _EFI_TABLE_HEADER {
     UINT32 Reserved;
 } EFI_TABLE_HEADER;
 
-// -------------------------------------------------------------
-// ------ EFI_SIMPLE_TEXT_INPUT_PROTOCOL - UEFI Spec 12.3 ------
-// -------------------------------------------------------------
+// --------------------------------------------
+// ------ EFI_SIMPLE_TEXT_INPUT_PROTOCOL ------
+// --------------------------------------------
 
 typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
 
@@ -128,6 +128,7 @@ typedef struct _EFI_INPUT_KEY {
     CHAR16 UnicodeChar;
 } EFI_INPUT_KEY;
 
+// UEFI Spec 12.3.3
 typedef
 EFI_STATUS
 (EFIAPI *EFI_INPUT_READ_KEY) (
@@ -142,9 +143,9 @@ typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL {
     EFI_EVENT          WaitForKey;
 } EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
 
-// --------------------------------------------------------------
-// ------ EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL - UEFI Spec 12.4 ------
-// --------------------------------------------------------------
+// ---------------------------------------------
+// ------ EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL ------
+// ---------------------------------------------
 
 typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 
@@ -199,6 +200,7 @@ EFI_STATUS
     IN UINTN                           Attribute
 );
 
+// UEFI Spec 12.4.7
 // Attributes
 #define EFI_BLACK                              0x00
 #define EFI_BLUE                               0x01
@@ -445,6 +447,63 @@ EFI_TPL
     IN EFI_TPL NewTpl
 );
 
+// UEFI Spec 7.2.1
+typedef enum {
+    AllocateAnyPages,
+    AllocateMaxAddress,
+    AllocateAddress,
+    MaxAllocateType
+} EFI_ALLOCATE_TYPE;
+
+// UEFI Spec 7.2.1
+typedef enum {
+    EfiReservedMemoryType,
+    EfiLoaderCode,
+    EfiLoaderData,
+    EfiBootServicesCode,
+    EfiBootServicesData,
+    EfiRuntimeServicesCode,
+    EfiRuntimeServicesData,
+    EfiConventionalMemory,
+    EfiUnusableMemory,
+    EfiACPIReclaimMemory,
+    EfiACPIMemoryNVS,
+    EfiMemoryMappedIO,
+    EfiMemoryMappedIOPortSpace,
+    EfiPalCode,
+    EfiPersistentMemory,
+    EfiUnacceptedMemoryType,
+    EfiMaxMemoryType
+} EFI_MEMORY_TYPE;
+
+typedef UINT64 EFI_PHYSICAL_ADDRESS;
+
+// UEFI Spec 7.2.1
+typedef
+EFI_STATUS
+(EFIAPI *EFI_ALLOCATE_PAGES) (
+    IN EFI_ALLOCATE_TYPE        Type,
+    IN EFI_MEMORY_TYPE          MemoryType,
+    IN UINTN                    Pages,
+    IN OUT EFI_PHYSICAL_ADDRESS *Memory
+);
+
+// UEFI Spec 7.2.4
+typedef
+EFI_STATUS
+(EFIAPI  *EFI_ALLOCATE_POOL) (
+    IN EFI_MEMORY_TYPE PoolType,
+    IN UINTN           Size,
+    OUT VOID           **Buffer
+);
+
+// UEFI Spec 7.5.1
+typedef
+EFI_STATUS
+(EFIAPI *EFI_STALL) (
+    IN UINTN Microseconds
+);
+
 // UEFI Spec 4.4.1
 typedef struct _EFI_BOOT_SERVICES{
     EFI_TABLE_HEADER     Hdr;
@@ -459,15 +518,13 @@ typedef struct _EFI_BOOT_SERVICES{
     //
     // Memory Services
     //
-    // EFI_ALLOCATE_PAGES   AllocatePages;  // EFI 1.0+
     // EFI_FREE_PAGES       FreePages;      // EFI 1.0+
     // EFI_GET_MEMORY_MAP   GetMemoryMap;   // EFI 1.0+
-    // EFI_ALLOCATE_POOL    AllocatePool;   // EFI 1.0+
     // EFI_FREE_POOL        FreePool;       // EFI 1.0+
-    void *AllocatePages;  // EFI 1.0+
+    EFI_ALLOCATE_PAGES   AllocatePages;  // EFI 1.0+
     void *FreePages;      // EFI 1.0+
     void *GetMemoryMap;   // EFI 1.0+
-    void *AllocatePool;   // EFI 1.0+
+    EFI_ALLOCATE_POOL    AllocatePool;   // EFI 1.0+
     void *FreePool;       // EFI 1.0+
 
     //
@@ -520,10 +577,9 @@ typedef struct _EFI_BOOT_SERVICES{
     // Miscellaneous Services
     //
     // EFI_GET_NEXT_MONOTONIC_COUNT   GetNextMonotonicCount; // EFI 1.0+
-    // EFI_STALL                      Stall;                 // EFI 1.0+
     // EFI_SET_WATCHDOG_TIMER         SetWatchdogTimer;      // EFI 1.0+
     void *GetNextMonotonicCount; // EFI 1.0+
-    void *Stall;                 // EFI 1.0+
+    EFI_STALL                      Stall;                 // EFI 1.0+
     void *SetWatchdogTimer;      // EFI 1.0+
 
     //

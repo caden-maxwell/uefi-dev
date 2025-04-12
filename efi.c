@@ -1,4 +1,5 @@
 #include "efilib.h"
+#include "menu.h"
 
 EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     (void)ImageHandle; // Unused for now
@@ -12,36 +13,28 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
     cOut->ClearScreen(cOut);
 
-    Printf(u"================================\r\n");
-    Printf(u"==== WELCOME TO MY UEFI APP ====\r\n");
-    Printf(u"================================\r\n\n");
+    EFI_MENU_PAGE *Menus[2] = {
+        (EFI_MENU_PAGE*)MainMenu(),
+        (EFI_MENU_PAGE*)OtherMenu()
+    };
 
-    EFI_EVENT Timer;
-    BS->CreateEvent(EVT_TIMER, TPL_CALLBACK, NULL, NULL, &Timer);
-
-    UINT32 units_per_sec = 10000000;
-    INT32 exit_seconds = 60;
-    BS->SetTimer(Timer, TimerPeriodic, 60 * units_per_sec);
-
-    Printf(u"Exiting in %d seconds, or press any key to exit...\r\n", exit_seconds);
-
-    EFI_EVENT Events[] = { Timer, cIn->WaitForKey };
-    
-    UINTN Index;
-    BS->WaitForEvent(2, Events, &Index);
-
+    // Start main event loop
+    EFI_MENU_PAGE *CurrentMenu = Menus[EfiMainMenuState];
     EFI_INPUT_KEY Key;
-    cIn->ReadKeyStroke(cIn, &Key);
+    UINTN Count = 0;
+    while (TRUE) {
+        cIn->ReadKeyStroke(cIn, &Key);
+        EFI_MENU_STATE NextMenuState = CurrentMenu->ProcessInput(CurrentMenu, &Key);
 
-    Printf(u"Event %d was fired: ", Index);
-    if (Index == 0)
-        Printf(u"Timer ran out.");
-    else
-        Printf(u"Key '%c' was pressed.", Key.UnicodeChar);
+        if (NextMenuState == EfiExitState)
+            break;
 
+        CurrentMenu = Menus[NextMenuState];
+        CurrentMenu->Update(CurrentMenu);
 
-    BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
-    cIn->ReadKeyStroke(cIn, &Key);
+        BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
+        cOut->ClearScreen(cOut);
+    }
 
     RS->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
 
