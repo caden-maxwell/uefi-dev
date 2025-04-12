@@ -21,7 +21,6 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     // Start main event loop
     EFI_MENU_PAGE *CurrentMenu = Menus[EfiMainMenuState];
     EFI_INPUT_KEY Key;
-    UINTN Count = 0;
     while (TRUE) {
         cIn->ReadKeyStroke(cIn, &Key);
         EFI_MENU_STATE NextMenuState = CurrentMenu->ProcessInput(CurrentMenu, &Key);

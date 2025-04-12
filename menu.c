@@ -7,7 +7,9 @@ typedef enum _EFI_MAIN_MENU_OPTIONS {
     EfiMainMenuN
 } EFI_MAIN_MENU_OPTIONS;
 
+// =======================
 // ====== Main Menu ======
+// =======================
 
 EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 {
@@ -46,7 +48,7 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 
     // Print menu options
     CHAR16 *Options[EfiMainMenuN] = { u"Other Menu", u"Exit" };
-    for (UINTN i=0; i < EfiMainMenuN; i++)
+    for (INT32 i=0; i < EfiMainMenuN; i++)
         if (MainMenu->CurrentOption == i)
             Printf(u"%s <-\r\n", Options[i]);
         else
@@ -64,7 +66,9 @@ EFI_MAIN_MENU *MainMenu(VOID)
     return MainMenuPtr;
 }
 
+// =============================
 // ====== Some Other Menu ======
+// =============================
 
 EFI_MENU_STATE OtherMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 {
@@ -82,7 +86,11 @@ VOID OtherMenuUpdate(EFI_MENU_PAGE *This)
     (void)MainMenuPage;
     Printf(u"===== Other Stuff =====\r\n\n");
 
-    Printf(u"Current Text Mode: %d\r\n", cOut->Mode->Mode);
+    Printf(u"MaxMode: %d\r\n", cOut->Mode->MaxMode);
+    Printf(u"CursorVisible: %d\r\n", cOut->Mode->CursorVisible);
+    Printf(u"CursorRow: %d\r\n", cOut->Mode->CursorRow);
+    Printf(u"CursorColumn: %d\r\n", cOut->Mode->CursorColumn);
+    Printf(u"Mode: %d\r\n", cOut->Mode->Mode);
 
     Printf(u"\n");
     Printf(u"Back <-\r\n");
