@@ -5,10 +5,7 @@
 
 #define EFIAPI __attribute__((__ms_abi__))
 #define PACKED __attribute__((__packed__))
-#define ALIGNED4 __attribute__((__aligned__(4)))
-#define FALSE (BOOLEAN)(0==1)
-#define TRUE  (BOOLEAN)(0==0)
-#define NULL  0
+#define ALIGNED4 
 
 // UEFI Spec 2.3.1
 #define IN
