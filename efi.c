@@ -13,7 +13,7 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
     cOut->ClearScreen(cOut);
 
-    EFI_MENU_PAGE *Menus[2] = {
+    EFI_MENU_PAGE *Menus[] = {
         [EfiMainMenuState] = MainMenu(),
         [EfiOtherMenuState] = OtherMenu()
     };

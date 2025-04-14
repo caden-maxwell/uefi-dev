@@ -49,7 +49,10 @@ EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 
 VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 {
-    CHAR16 *Options[EfiMainMenuN] = { u"Other Menu", u"Exit" };
+    CHAR16 *Options[EfiMainMenuN] = {
+        [EfiMainMenuOtherMenu] = u"Other Menu",
+        [EfiMainMenuExit] = u"Exit",
+    };
     INT32 TopRow = cOut->Mode->CursorRow;
     CHAR16 *Arrow = u" <-";
     if (This->InitialRender)
@@ -59,9 +62,14 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 
         TopRow = cOut->Mode->CursorRow;
 
-        Printf(u"%s%s\r\n", Options[0], Arrow);
-        for (INT32 i=1; i < EfiMainMenuN; i++)
-            Printf(u"%s\r\n", Options[i]);
+        for (INT32 i=0; i < EfiMainMenuN; i++)
+        {
+            CHAR16 *Suffix = u"";
+            if (i == This->CurrentOption)
+                Suffix = Arrow;
+
+            Printf(u"%s%s\r\n", Options[i], Suffix);
+        }
 
         cOut->SetCursorPosition(cOut, 0, TopRow);
         return;
