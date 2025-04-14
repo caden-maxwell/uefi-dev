@@ -1,12 +1,17 @@
 #include "efilib.h"
 
-#define MENU_ARROW_UP   1
-#define MENU_ARROW_DOWN 2
-#define MENU_NEWLINE    0xD
+typedef enum SCAN_CODE {
+    ScanCodeArrowUp   = 1,
+    ScanCodeArrowDown = 2,
+} SCAN_CODE;
 
-typedef struct _EFI_MENU_PAGE EFI_MENU_PAGE;
+typedef enum UNICODE_CHAR {
+    UnicodeCharNewline = 0xD,
+} UNICODE_CHAR;
 
-typedef enum _EFI_MENU_STATE {
+typedef struct EFI_MENU_PAGE EFI_MENU_PAGE;
+
+typedef enum EFI_MENU_STATE {
     EfiMainMenuState,
     EfiOtherMenuState,
     EfiExitState
@@ -27,27 +32,13 @@ VOID
     IN EFI_MENU_PAGE *This
 );
 
-// ===== Abstract Menu Page =====
-
-typedef struct _EFI_MENU_PAGE {
+typedef struct EFI_MENU_PAGE {
     EFI_MENU_PROCESS_INPUT ProcessInput;
     EFI_MENU_UPDATE        Update;
+    BOOLEAN                InitialRender;
+    INT32                  CurrentOption;
+    INT32                  PrevOption;
 } EFI_MENU_PAGE;
 
-// ===== Main Menu =====
-
-typedef struct _EFI_MAIN_MENU {
-    EFI_MENU_PAGE Page;
-    INT32        CurrentOption;
-} EFI_MAIN_MENU;
-
-EFI_MAIN_MENU *MainMenu(VOID);
-
-// ===== Some other Menu =====
-
-typedef struct _EFI_OTHER_MENU {
-    EFI_MENU_PAGE Page;
-    INT32        Something;
-} EFI_OTHER_MENU;
-
-EFI_OTHER_MENU *OtherMenu(VOID);
+EFI_MENU_PAGE *MainMenu(VOID);
+EFI_MENU_PAGE *OtherMenu(VOID);

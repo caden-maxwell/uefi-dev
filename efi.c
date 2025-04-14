@@ -14,11 +14,12 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     cOut->ClearScreen(cOut);
 
     EFI_MENU_PAGE *Menus[2] = {
-        (EFI_MENU_PAGE*)MainMenu(),
-        (EFI_MENU_PAGE*)OtherMenu()
+        [EfiMainMenuState] = MainMenu(),
+        [EfiOtherMenuState] = OtherMenu()
     };
 
     // Start main event loop
+    EFI_MENU_PAGE *PrevMenu = NULL;
     EFI_MENU_PAGE *CurrentMenu = Menus[EfiMainMenuState];
     EFI_INPUT_KEY Key;
     while (TRUE) {
@@ -29,10 +30,16 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
             break;
 
         CurrentMenu = Menus[NextMenuState];
+        if (CurrentMenu != PrevMenu)
+        {
+            cOut->ClearScreen(cOut);
+            CurrentMenu->InitialRender = TRUE;
+        }
+
         CurrentMenu->Update(CurrentMenu);
 
         BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
-        cOut->ClearScreen(cOut);
+        PrevMenu = CurrentMenu;
     }
 
     RS->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);

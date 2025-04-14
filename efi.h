@@ -40,7 +40,7 @@ typedef UINT8  EFI_IPv6_ADDRESS[16];
 typedef UINT8  ALIGNED4 EFI_IP_ADDRESS[16];
 
 // UEFI Spec. Appendix A
-typedef struct _EFI_GUID {
+typedef struct EFI_GUID {
     UINT32 TimeLow;
     UINT16 TimeMid;
     UINT16 TimeHighAndVersion;
@@ -89,7 +89,7 @@ typedef struct _EFI_GUID {
 #define EFI_IP_ADDRESS_CONFLICT  ENCODE_ERROR (34)
 #define EFI_HTTP_ERROR           ENCODE_ERROR (35)
 
-typedef struct _EFI_SYSTEM_TABLE EFI_SYSTEM_TABLE;
+typedef struct EFI_SYSTEM_TABLE EFI_SYSTEM_TABLE;
 
 // UEFI Spec. 4.1.1
 typedef
@@ -100,7 +100,7 @@ EFI_STATUS
 );
 
 // UEFI Spec 4.2.1
-typedef struct _EFI_TABLE_HEADER {
+typedef struct EFI_TABLE_HEADER {
     UINT64 Signature;
     UINT32 Revision;
     UINT32 HeaderSize;
@@ -112,7 +112,7 @@ typedef struct _EFI_TABLE_HEADER {
 // ------ EFI_SIMPLE_TEXT_INPUT_PROTOCOL ------
 // --------------------------------------------
 
-typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
+typedef struct EFI_SIMPLE_TEXT_INPUT_PROTOCOL EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
 
 // UEFI Spec 12.3.2
 typedef
@@ -123,7 +123,7 @@ EFI_STATUS
 );
 
 // UEFI Spec 12.3.3
-typedef struct _EFI_INPUT_KEY {
+typedef struct EFI_INPUT_KEY {
     UINT16 ScanCode;
     CHAR16 UnicodeChar;
 } EFI_INPUT_KEY;
@@ -137,7 +137,7 @@ EFI_STATUS
 );
 
 // UEFI Spec 12.3.1
-typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL {
+typedef struct EFI_SIMPLE_TEXT_INPUT_PROTOCOL {
     EFI_INPUT_RESET    Reset;
     EFI_INPUT_READ_KEY ReadKeyStroke;
     EFI_EVENT          WaitForKey;
@@ -147,7 +147,7 @@ typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL {
 // ------ EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL ------
 // ---------------------------------------------
 
-typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
+typedef struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 
 // UEFI Spec 12.4.2
 typedef
@@ -266,7 +266,7 @@ typedef struct _SIMPLE_TEXT_OUTPUT_MODE {
 } SIMPLE_TEXT_OUTPUT_MODE;
 
 // UEFI Spec 12.4.1
-typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
+typedef struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
     EFI_TEXT_RESET               Reset;
     EFI_TEXT_STRING              OutputString;
     EFI_TEXT_TEST_STRING         TestString;
@@ -302,7 +302,7 @@ VOID
 );
 
 // UEFI Spec 4.5.1
-typedef struct _EFI_RUNTIME_SERVICES {
+typedef struct EFI_RUNTIME_SERVICES {
     EFI_TABLE_HEADER                 Hdr;
 
     //
@@ -505,7 +505,7 @@ EFI_STATUS
 );
 
 // UEFI Spec 4.4.1
-typedef struct _EFI_BOOT_SERVICES{
+typedef struct EFI_BOOT_SERVICES{
     EFI_TABLE_HEADER     Hdr;
 
     //
@@ -635,14 +635,14 @@ typedef struct _EFI_BOOT_SERVICES{
 // ------ EFI_CONFIGURATION_TABLE ------
 // -------------------------------------
 
-typedef struct _EFI_CONFIGURATION_TABLE EFI_CONFIGURATION_TABLE;
+typedef struct EFI_CONFIGURATION_TABLE EFI_CONFIGURATION_TABLE;
 
 // ------------------------------
 // ------ EFI_SYSTEM_TABLE ------
 // ------------------------------
 
 // UEFI Spec 4.3.1
-typedef struct _EFI_SYSTEM_TABLE {
+typedef struct EFI_SYSTEM_TABLE {
   EFI_TABLE_HEADER                Hdr;
   CHAR16                          *FirmwareVendor;
   UINT32                          FirmwareRevision;

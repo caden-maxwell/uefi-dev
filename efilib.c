@@ -30,10 +30,8 @@ void PutChar(CHAR16 ch)
 
 // Expand upon PrintXXX in the future to use any type of int (byte, short, int, long)
 // Buffer size would be ceil(log_(base)^(2^num_bits - 1)) + 1
-void PrintInt(INT32 num)
+void IntToStr(CHAR16 *buffer, INT32 num)
 {
-    CHAR16 buffer[12]; // 1 sign char, 10 num chars, 1 null-terminator
-
     BOOLEAN negative = num < 0;
     if (negative) num = -num;
 
@@ -52,14 +50,10 @@ void PrintInt(INT32 num)
         buffer[i] = buffer[j];
         buffer[j] = temp;
     }
-
-    cOut->OutputString(cOut, buffer);
 }
 
-void PrintUint(UINT32 num)
+void UIntToStr(CHAR16 *buffer, UINT32 num)
 {
-    CHAR16 buffer[11]; // 10 num chars, 1 null-terminator
-
     UINTN i = 0;
     do {
         buffer[i++] = num % 10 + '0';
@@ -74,20 +68,16 @@ void PrintUint(UINT32 num)
         buffer[i] = buffer[j];
         buffer[j] = temp;
     }
-
-    cOut->OutputString(cOut, buffer);
 }
 
-void PrintHex(UINT32 num) // Expects an unsigned int
+void HexToStr(CHAR16 *buffer, UINT32 hexnum) // Expects an unsigned int
 {
     CHAR16 *digits = u"0123456789ABCDEF";
-    CHAR16 buffer[9]; // 8 hex chars, 1 null-terminator
-
     UINTN i = 0;
     do {
-        buffer[i++] = digits[num % 16];
-        num /= 16;
-    } while (num > 0);
+        buffer[i++] = digits[hexnum % 16];
+        hexnum /= 16;
+    } while (hexnum > 0);
 
     buffer[i--] = u'\0';
 
@@ -97,64 +87,73 @@ void PrintHex(UINT32 num) // Expects an unsigned int
         buffer[i] = buffer[j];
         buffer[j] = temp;
     }
-
-    cOut->OutputString(cOut, buffer);
 }
 
-void Printf(CHAR16 *fmt, ...)
+VOID FormatString(CHAR16 *str_buf, CHAR16 *fstr, va_list args)
 {
-    va_list args;
-    va_start(args, fmt);
-
     CHAR16 ch;
-    for (UINTN i=0; fmt[i] != u'\0'; i++)
+    UINTN buf_idx = 0;
+    for (UINTN i=0; fstr[i] != u'\0'; i++)
     {
-        ch = fmt[i];
+        ch = fstr[i];
         // If we see a format specifier '%'...
         if (ch == u'%')
         {
-            ch = fmt[++i];
+            ch = fstr[++i];
             // Check the kind of format specifier
             switch (ch)
             {
                 case u's': // '%s' -- string
                 {
-                    cOut->OutputString(cOut, va_arg(args, CHAR16 *));
+                    CHAR16 *str = va_arg(args, CHAR16 *);
+                    while (*str) str_buf[buf_idx++] = *str++;
                     break;
                 }
                 case u'c': // '%c' -- character
                 {
-                    PutChar((CHAR16)va_arg(args, UINTN));
+                    CHAR16 chr = (CHAR16)va_arg(args, UINTN);
+                    if (chr) str_buf[buf_idx++] = chr;
                     break;
                 }
                 case u'%': // '%%' -- literal %
                 {
-                    PutChar(u'%');
+                    str_buf[buf_idx++] = u'%';
                     break;
                 }
                 case u'd': // '%d' -- signed int
                 {
-                    PrintInt(va_arg(args, INT32));
+                    CHAR16 str_int_buf[12]; // 1 sign char, 10 num chars, 1 null-terminator
+                    CHAR16 *int_buf_ptr = str_int_buf;
+                    IntToStr(str_int_buf, va_arg(args, INT32));
+                    while (*int_buf_ptr) str_buf[buf_idx++] = *int_buf_ptr++;
                     break;
                 }
                 case u'x': // '%x' -- hexadecimal
                 {
-                    PrintHex(va_arg(args, UINT32));
+                    CHAR16 str_hex_buf[9]; // 8 hex chars, 1 null-terminator
+                    CHAR16 *hex_buf_ptr = str_hex_buf;
+                    HexToStr(str_hex_buf, va_arg(args, UINT32));
+                    while (*hex_buf_ptr) str_buf[buf_idx++] = *hex_buf_ptr++;
                     break;
                 }
                 case u'u': // '%u' -- unsigned int
                 {
-                    PrintUint(va_arg(args, UINT32));
+                    CHAR16 str_uint_buf[11]; // 10 num chars, 1 null-terminator
+                    CHAR16 *uint_buf_ptr = str_uint_buf;
+                    UIntToStr(str_uint_buf, va_arg(args, UINT32));
+                    while (*uint_buf_ptr) str_buf[buf_idx++] = *uint_buf_ptr++;
                     break;
                 }
                 case u'h':
                 {
+                    // TODO: Fix messy recursion here
                     va_arg(args, UINTN); // Still need to consume an arg so we can continue
                     Printf(u"(Format specifier '%%%c' is not yet implemented)", ch);
                     break;
                 }
                 default:
                 {
+                    // TODO: Fix messy recursion here
                     va_arg(args, UINTN);
                     Printf(u"(INVALID FORMAT SPECIFIER: '%%%c')", ch);
                 }
@@ -162,8 +161,23 @@ void Printf(CHAR16 *fmt, ...)
         }
         // Otherwise, print the char
         else
-            PutChar(ch);
+            str_buf[buf_idx++] = ch;
     }
 
+    str_buf[buf_idx] = u'\0';
     va_end(args);
+}
+
+VOID vPrintf(CHAR16 *fstr, va_list args)
+{
+    CHAR16 buffer[1024];
+    FormatString(buffer, fstr, args);
+    cOut->OutputString(cOut, buffer);
+}
+
+VOID Printf(CHAR16 *fstr, ...)
+{
+    va_list args;
+    va_start(args, fstr);
+    vPrintf(fstr, args);
 }

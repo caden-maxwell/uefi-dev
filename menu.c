@@ -1,11 +1,19 @@
 #include "efilib.h"
 #include "menu.h"
 
-typedef enum _EFI_MAIN_MENU_OPTIONS {
+typedef enum EFI_MAIN_MENU_OPTIONS {
     EfiMainMenuOtherMenu,
     EfiMainMenuExit,
     EfiMainMenuN
 } EFI_MAIN_MENU_OPTIONS;
+
+const EFI_MENU_PAGE DefaultPage = {
+    .InitialRender = TRUE,
+    .CurrentOption = 0,
+    .PrevOption = 0,
+    .ProcessInput = NULL,
+    .Update = NULL
+};
 
 // =======================
 // ====== Main Menu ======
@@ -13,12 +21,11 @@ typedef enum _EFI_MAIN_MENU_OPTIONS {
 
 EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 {
-    EFI_MAIN_MENU *MainMenuPage = (EFI_MAIN_MENU*)This;
-
     // Select submenu
-    if (Key->UnicodeChar == 0xD)
+    This->PrevOption = This->CurrentOption;
+    if (Key->UnicodeChar == UnicodeCharNewline)
     {
-        switch (MainMenuPage->CurrentOption) {
+        switch (This->CurrentOption) {
             case EfiMainMenuOtherMenu: return EfiOtherMenuState;
             case EfiMainMenuExit: return EfiExitState;
             default: Printf(u"INVALID OPTION!!!");
@@ -26,43 +33,55 @@ EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
     }
 
     // Move selection
-    if (Key->ScanCode == MENU_ARROW_DOWN)
-        MainMenuPage->CurrentOption++;
-    else if (Key->ScanCode == MENU_ARROW_UP)
-        MainMenuPage->CurrentOption--;
+    if (Key->ScanCode == ScanCodeArrowDown)
+        This->CurrentOption++;
+    else if (Key->ScanCode == ScanCodeArrowUp)
+        This->CurrentOption--;
 
     // Check current selection bounds
-    if (MainMenuPage->CurrentOption < 0)
-        MainMenuPage->CurrentOption = 0;
-    else if (MainMenuPage->CurrentOption > EfiMainMenuN - 1)
-        MainMenuPage->CurrentOption = EfiMainMenuN - 1;
+    if (This->CurrentOption < 0)
+        This->CurrentOption = 0;
+    else if (This->CurrentOption > EfiMainMenuN - 1)
+        This->CurrentOption = EfiMainMenuN - 1;
 
     return EfiMainMenuState;
 }
 
 VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 {
-    EFI_MAIN_MENU *MainMenu = (EFI_MAIN_MENU*)This;
-
-    Printf(u"===== Main Menu =====\r\n\n");
-
-    // Print menu options
     CHAR16 *Options[EfiMainMenuN] = { u"Other Menu", u"Exit" };
-    for (INT32 i=0; i < EfiMainMenuN; i++)
-        if (MainMenu->CurrentOption == i)
-            Printf(u"%s <-\r\n", Options[i]);
-        else
+    INT32 TopRow = cOut->Mode->CursorRow;
+    CHAR16 *Arrow = u" <-";
+    if (This->InitialRender)
+    {
+        This->InitialRender = FALSE;
+        Printf(u"===== Main Menu =====\r\n\n");
+
+        TopRow = cOut->Mode->CursorRow;
+
+        Printf(u"%s%s\r\n", Options[0], Arrow);
+        for (INT32 i=1; i < EfiMainMenuN; i++)
             Printf(u"%s\r\n", Options[i]);
+
+        cOut->SetCursorPosition(cOut, 0, TopRow);
+        return;
+    }
+
+    cOut->SetCursorPosition(cOut, 0, TopRow + This->PrevOption);
+    Printf(u"%s   \r", Options[This->PrevOption]);
+    cOut->SetCursorPosition(cOut, 0, TopRow + This->CurrentOption);
+    Printf(u"%s%s\r", Options[This->CurrentOption], Arrow);
+    cOut->SetCursorPosition(cOut, 0, TopRow);
 }
 
 // Initialize MainMenu Page
-EFI_MAIN_MENU *MainMenu(VOID)
+EFI_MENU_PAGE *MainMenu(VOID)
 {
-    EFI_MAIN_MENU *MainMenuPtr;
-    BS->AllocatePool(EfiLoaderData, sizeof(EFI_MAIN_MENU), (VOID**)&MainMenuPtr);
-    MainMenuPtr->Page.ProcessInput = MainMenuProcessInput;
-    MainMenuPtr->Page.Update = MainMenuUpdate;
-    MainMenuPtr->CurrentOption = 0;
+    EFI_MENU_PAGE *MainMenuPtr;
+    BS->AllocatePool(EfiLoaderData, sizeof(EFI_MENU_PAGE), (VOID**)&MainMenuPtr);
+    *MainMenuPtr = DefaultPage;
+    MainMenuPtr->ProcessInput = MainMenuProcessInput;
+    MainMenuPtr->Update = MainMenuUpdate;
     return MainMenuPtr;
 }
 
@@ -72,9 +91,8 @@ EFI_MAIN_MENU *MainMenu(VOID)
 
 EFI_MENU_STATE OtherMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 {
-    EFI_OTHER_MENU *OtherMenu = (EFI_OTHER_MENU*)This;
-    (void)OtherMenu;
-    if (Key->UnicodeChar == 0xD)
+    (void)This;
+    if (Key->UnicodeChar == UnicodeCharNewline)
         return EfiMainMenuState;
 
     return EfiOtherMenuState;
@@ -82,27 +100,33 @@ EFI_MENU_STATE OtherMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 
 VOID OtherMenuUpdate(EFI_MENU_PAGE *This)
 {
-    EFI_OTHER_MENU *MainMenuPage = (EFI_OTHER_MENU*)This;
-    (void)MainMenuPage;
-    Printf(u"===== Other Stuff =====\r\n\n");
-
-    Printf(u"MaxMode: %d\r\n", cOut->Mode->MaxMode);
-    Printf(u"CursorVisible: %d\r\n", cOut->Mode->CursorVisible);
-    Printf(u"CursorRow: %d\r\n", cOut->Mode->CursorRow);
-    Printf(u"CursorColumn: %d\r\n", cOut->Mode->CursorColumn);
-    Printf(u"Mode: %d\r\n", cOut->Mode->Mode);
-
-    Printf(u"\n");
-    Printf(u"Back <-\r\n");
+    if (This->InitialRender)
+    {
+        This->InitialRender = FALSE;
+        Printf(
+            u"===== Other Stuff =====\r\n\n"
+            u"MaxMode: %d\r\n"
+            u"CursorVisible: %d\r\n"
+            u"CursorRow: %d\r\n"
+            u"CursorColumn: %d\r\n"
+            u"Mode: %d\r\n\n"
+            u"Back <-\r\n",
+            cOut->Mode->MaxMode,
+            cOut->Mode->CursorVisible,
+            cOut->Mode->CursorRow,
+            cOut->Mode->CursorColumn,
+            cOut->Mode->Mode
+        );
+    }
 }
 
 // Initialize OtherMenu Page
-EFI_OTHER_MENU *OtherMenu(VOID)
+EFI_MENU_PAGE *OtherMenu(VOID)
 {
-    EFI_OTHER_MENU *OtherMenuPtr;
-    BS->AllocatePool(EfiLoaderData, sizeof(EFI_OTHER_MENU), (VOID**)&OtherMenuPtr);
-    OtherMenuPtr->Page.ProcessInput = OtherMenuProcessInput;
-    OtherMenuPtr->Page.Update = OtherMenuUpdate;
-    OtherMenuPtr->Something = 1000;
+    EFI_MENU_PAGE *OtherMenuPtr;
+    BS->AllocatePool(EfiLoaderData, sizeof(EFI_MENU_PAGE), (VOID**)&OtherMenuPtr);
+    *OtherMenuPtr = DefaultPage;
+    OtherMenuPtr->ProcessInput = OtherMenuProcessInput;
+    OtherMenuPtr->Update = OtherMenuUpdate;
     return OtherMenuPtr;
 }
