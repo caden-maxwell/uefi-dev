@@ -1,7 +1,7 @@
 #include "efi.h"
 
-#ifndef _LIB_H
-#define _LIB_H
+#ifndef _EFILIB_H
+#define _EFILIB_H
 
 #define FALSE (BOOLEAN)(0==1)
 #define TRUE  (BOOLEAN)(0==0)
@@ -20,4 +20,4 @@ void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable);
 void Printf(CHAR16 *fmt, ...);
 void PutChar(CHAR16 ch);
 
-#endif //_LIB_H
+#endif //_EFILIB_H

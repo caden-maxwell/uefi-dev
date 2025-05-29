@@ -110,20 +110,26 @@ VOID OtherMenuUpdate(EFI_MENU_PAGE *This)
 {
     if (This->InitialRender)
     {
+        UINTN cols = 0;
+        UINTN rows = 0;
+        cOut->QueryMode(cOut, cOut->Mode->Mode, &cols, &rows);
         This->InitialRender = FALSE;
         Printf(
             u"===== Other Stuff =====\r\n\n"
+            u"Current Mode: %d\r\n\n"
             u"MaxMode: %d\r\n"
-            u"CursorVisible: %d\r\n"
             u"CursorRow: %d\r\n"
             u"CursorColumn: %d\r\n"
-            u"Mode: %d\r\n\n"
+            u"CursorVisible: %d\r\n"
+            u"Columns: %d\r\n"
+            u"Rows: %d\r\n"
             u"Back <-\r\n",
+            cOut->Mode->Mode,
             cOut->Mode->MaxMode,
-            cOut->Mode->CursorVisible,
             cOut->Mode->CursorRow,
             cOut->Mode->CursorColumn,
-            cOut->Mode->Mode
+            cOut->Mode->CursorVisible,
+            cols, rows
         );
     }
 }

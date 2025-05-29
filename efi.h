@@ -279,6 +279,39 @@ typedef struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
     SIMPLE_TEXT_OUTPUT_MODE      *Mode;
 } EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 
+// --------------------------------------
+// ------ EFI_DEVICE_PATH_PROTOCOL ------
+// --------------------------------------
+
+// UEFI Spec 10.2
+typedef struct EFI_DEVICE_PATH_PROTOCOL {
+    UINT8 Type;
+    UINT8 SubType;
+    UINT8 Length[2];
+} EFI_DEVICE_PATH_PROTOCOL;
+
+// ------------------------------------
+// ------ EFI_LOAD_FILE_PROTOCOL ------
+// ------------------------------------
+
+typedef struct EFI_LOAD_FILE_PROTOCOL EFI_LOAD_FILE_PROTOCOL;
+
+// UEFI Spec 13.1.2
+typedef
+EFI_STATUS
+(EFIAPI *EFI_LOAD_FILE) (
+    IN EFI_LOAD_FILE_PROTOCOL   *This,
+    IN EFI_DEVICE_PATH_PROTOCOL *FilePath,
+    IN BOOLEAN                  BootPolicy,
+    IN OUT UINTN                *BufferSize,
+    IN VOID                     *Buffer OPTIONAL
+);
+
+// UEFI Spec 13.1.1
+typedef struct EFI_LOAD_FILE_PROTOCOL {
+    EFI_LOAD_FILE LoadFile;
+} EFI_LOAD_FILE_PROTOCOL;
+
 // ----------------------------------
 // ------ EFI_RUNTIME_SERVICES ------
 // ----------------------------------
@@ -341,7 +374,7 @@ typedef struct EFI_RUNTIME_SERVICES {
     //
     // EFI_GET_NEXT_HIGH_MONO_COUNT     GetNextHighMonotonicCount;
     void *GetNextHighMonotonicCount;
-    EFI_RESET_SYSTEM                 ResetSystem;
+    EFI_RESET_SYSTEM                    ResetSystem;
 
     //
     // UEFI 2.0 Capsule Services

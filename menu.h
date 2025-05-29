@@ -1,5 +1,8 @@
 #include "efilib.h"
 
+#ifndef _MENU_H
+#define _MENU_H
+
 typedef enum SCAN_CODE {
     ScanCodeArrowUp   = 1,
     ScanCodeArrowDown = 2,
@@ -42,3 +45,5 @@ typedef struct EFI_MENU_PAGE {
 
 EFI_MENU_PAGE *MainMenu(VOID);
 EFI_MENU_PAGE *OtherMenu(VOID);
+
+#endif // _MENU_H
