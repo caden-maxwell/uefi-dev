@@ -122,8 +122,7 @@ VOID OtherMenuUpdate(EFI_MENU_PAGE *This)
             u"CursorColumn: %d\r\n"
             u"CursorVisible: %d\r\n"
             u"Columns: %d\r\n"
-            u"Rows: %d\r\n"
-            u"Back <-\r\n",
+            u"Rows: %d\r\n",
             cOut->Mode->Mode,
             cOut->Mode->MaxMode,
             cOut->Mode->CursorRow,
@@ -131,6 +130,14 @@ VOID OtherMenuUpdate(EFI_MENU_PAGE *This)
             cOut->Mode->CursorVisible,
             cols, rows
         );
+
+        for (INT32 i=0; i<cOut->Mode->MaxMode; i++)
+        {
+            cOut->QueryMode(cOut, i, &cols, &rows);
+            Printf(u"Mode %d: %d x %d\r\n", i, cols, rows);
+        }
+
+        Printf(u"Back <-\r\n");
     }
 }
 
