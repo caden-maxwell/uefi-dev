@@ -187,6 +187,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
             cOut->QueryMode(cOut, i, &cols, &rows);
             Printf(u"Mode %d: %d x %d\r\n", i, cols, rows);
         }
+        Printf(u"\n");
 
         TopRow = cOut->Mode->CursorRow;
 
