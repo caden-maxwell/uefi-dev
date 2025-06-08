@@ -111,41 +111,71 @@ typedef enum EFI_SCREEN_INFO_MENU_OPTIONS {
 
 EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 {
-    // Printf(u"KEY: %c, SCANCODE: 0x%x\r\n", Key->UnicodeChar, Key->ScanCode);
-    // Select submenu/perform action
-    This->PrevOption = This->CurrentOption;
-    if (This->AwaitingInput) {
-        if (Key->UnicodeChar == UnicodeCharNewline)
+    // Printf(u"KEY: %c, SCANCODE: 0x%x\r\n", Key->UnicodeChar, Key->ScanCode); // For debugging
+
+    // Entering mode number
+    if (This->AwaitingInput)
+    {
+        // Get the current and max modes
+        INTN PrevMode = cOut->Mode->Mode;
+        INTN NewMode  = PrevMode;
+        INTN MaxMode  = cOut->Mode->MaxMode - 1;
+
+        // If [Enter] or [ESC], stop getting input
+        if (Key->UnicodeChar == UnicodeCharNewline || Key->ScanCode == ScanCodeEscape)
         {
+            This->RedrawNeeded = TRUE; // Need to redraw to get rid of suffixes
             This->AwaitingInput = FALSE;
+        }
+        // If [Down], increment the mode
+        else if (Key->ScanCode == ScanCodeArrowDown)
+        {
+            if (++NewMode > MaxMode) NewMode = MaxMode;
+        }
+        // If [Up], decrement the mode
+        else if (Key->ScanCode == ScanCodeArrowUp)
+        {
+            if (--NewMode < 0) NewMode = 0;
+        }
+        // If [1-MaxMode], switch to mode
+        else if (Key->UnicodeChar > '0' && Key->UnicodeChar - '0' - 1 <= MaxMode)
+        {
+            NewMode = Key->UnicodeChar - '0' - 1;
+        }
+
+        // If the mode changed, set it and update the screen
+        if (NewMode != PrevMode) {
+            cOut->SetMode(cOut, NewMode);
+            IntToStr(This->InputBuffer, ++NewMode);
             This->RedrawNeeded = TRUE;
-            UINTN num;
-            // This *should* be protected against invalid inputs like 'u' or ' '
-            StrToUInt(This->InputBuffer, &num);
-            cOut->SetMode(cOut, num - 1);
         }
-        else if (Key->UnicodeChar > '0' && Key->UnicodeChar <= '9' && Key->UnicodeChar - '0' <= cOut->Mode->MaxMode)
-            This->InputBuffer[0] = Key->UnicodeChar;
 
-        This->InputBuffer[1] = '\0';
-    }
-    else if (Key->UnicodeChar == UnicodeCharNewline) {
-        switch (This->CurrentOption) {
-            case EfiScreenInfoMenuSetTextMode:  This->AwaitingInput = TRUE; break;
-            case EfiScreenInfoMenuBack: return EfiMainMenuState;
+    // Select submenu/perform action
+    } else {
+        if (Key->UnicodeChar == UnicodeCharNewline) {
+            switch (This->CurrentOption) {
+                case EfiScreenInfoMenuSetTextMode: {
+                    This->AwaitingInput = TRUE;
+                    This->RedrawNeeded  = TRUE;
+                    break;
+                }
+                case EfiScreenInfoMenuBack: return EfiMainMenuState;
+            }
         }
-    }
-    // Move selection
-    else if (Key->ScanCode == ScanCodeArrowDown)
-        This->CurrentOption++;
-    else if (Key->ScanCode == ScanCodeArrowUp)
-        This->CurrentOption--;
+        else if (Key->ScanCode == ScanCodeEscape) return EfiMainMenuState;
 
-    // Check current selection bounds
-    if (This->CurrentOption < 0)
-        This->CurrentOption = 0;
-    else if (This->CurrentOption > EfiScreenInfoMenuN - 1)
-        This->CurrentOption = EfiScreenInfoMenuN - 1;
+        This->PrevOption = This->CurrentOption;
+
+        // Move selection
+        if (Key->ScanCode == ScanCodeArrowDown) This->CurrentOption++;
+        else if (Key->ScanCode == ScanCodeArrowUp) This->CurrentOption--;
+
+        // Check current selection bounds
+        if (This->CurrentOption < 0)
+            This->CurrentOption = 0;
+        else if (This->CurrentOption > EfiScreenInfoMenuN - 1)
+            This->CurrentOption = EfiScreenInfoMenuN - 1;
+    }
 
     return EfiScreenInfoMenuState;
 }
@@ -157,7 +187,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
         [EfiScreenInfoMenuBack]        = u"Back to Main Menu",
     };
     INT32 TopSelectableRow = cOut->Mode->CursorRow;
-    if (This->RedrawNeeded || This->AwaitingInput)
+    if (This->RedrawNeeded)
     {
         This->RedrawNeeded = FALSE;
         cOut->ClearScreen(cOut);

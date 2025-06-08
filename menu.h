@@ -4,8 +4,9 @@
 #define _MENU_H
 
 typedef enum SCAN_CODE {
-    ScanCodeArrowUp   = 1,
-    ScanCodeArrowDown = 2,
+    ScanCodeArrowUp   = 0x01,
+    ScanCodeArrowDown = 0x02,
+    ScanCodeEscape    = 0x17,
 } SCAN_CODE;
 
 typedef enum UNICODE_CHAR {
