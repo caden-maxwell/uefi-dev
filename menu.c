@@ -31,9 +31,10 @@ EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
         switch (This->CurrentOption) {
             case EfiMainMenuScreenInfoMenu: return EfiScreenInfoMenuState;
             case EfiMainMenuExit: return EfiExitState;
-            default: Printf(u"INVALID OPTION!!!");
         }
     }
+
+    if (Key->ScanCode == ScanCodeEscape) return EfiExitState;
 
     // Move selection
     if (Key->ScanCode == ScanCodeArrowDown)
