@@ -8,7 +8,7 @@ EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn;
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 EFI_STATUS Status;
 
-VOID InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
+VOID InitGlobalVars(IN EFI_SYSTEM_TABLE *SystemTable)
 {
     ST = SystemTable;
     BS = ST->BootServices;
@@ -21,7 +21,7 @@ VOID InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
 // ===== Print functions =====
 // ===========================
 
-VOID PutChar(CHAR16 ch)
+VOID PutChar(IN CHAR16 ch)
 {
     // ConOut->OutputString expects a null-terminated string of chars
     CHAR16 str_arr[2] = { ch, u'\0' };
@@ -30,7 +30,7 @@ VOID PutChar(CHAR16 ch)
 
 // Expand upon PrintXXX in the future to use any type of int (byte, short, int, long)
 // Buffer size would be ceil(log_(base)^(2^num_bits - 1)) + 1
-VOID IntToStr(CHAR16 *buffer, INT32 num)
+VOID IntToStr(OUT CHAR16 *buffer, IN INT32 num)
 {
     BOOLEAN negative = num < 0;
     if (negative) num = -num;
@@ -89,7 +89,7 @@ VOID HexToStr(CHAR16 *buffer, UINT32 hexnum) // Expects an unsigned int
     }
 }
 
-VOID FormatString(OUT CHAR16 *str_buf, CHAR16 *fstr, va_list args)
+VOID FormatString(OUT CHAR16 *str_buf, IN CHAR16 *fstr, IN va_list args)
 {
     CHAR16 ch;
     UINTN buf_idx = 0;
@@ -168,33 +168,21 @@ VOID FormatString(OUT CHAR16 *str_buf, CHAR16 *fstr, va_list args)
     va_end(args);
 }
 
-VOID vPrintf(CHAR16 *fstr, va_list args)
+VOID vPrintf(IN CHAR16 *fstr, IN va_list args)
 {
     CHAR16 buffer[1024];
     FormatString(buffer, fstr, args);
     cOut->OutputString(cOut, buffer);
 }
 
-VOID Printf(CHAR16 *fstr, ...)
+VOID Printf(IN CHAR16 *fstr, ...)
 {
     va_list args;
     va_start(args, fstr);
     vPrintf(fstr, args);
 }
 
-VOID vsPrintf(CHAR16 *buf, CHAR16 *fstr, va_list args)
-{
-    FormatString(buf, fstr, args);
-}
-
-VOID sPrintf(OUT CHAR16 *buf, IN CHAR16 *fstr, ...)
-{
-    va_list args;
-    va_start(args, fstr);
-    vsPrintf(buf, fstr, args);
-}
-
-UINTN strlcpy(OUT CHAR16 *dest, const CHAR16 *source, UINTN size)
+UINTN StrlCpy(OUT CHAR16 *dest, IN const CHAR16 *source, IN UINTN size)
 {
     CHAR16 *dst = dest;
     const CHAR16 *src = source;
@@ -213,27 +201,28 @@ UINTN strlcpy(OUT CHAR16 *dest, const CHAR16 *source, UINTN size)
     return src - source;
 }
 
-VOID vsnPrintf(OUT CHAR16 *dest, INT32 n, CHAR16 *fstr, va_list args)
+VOID vsnPrintf(OUT CHAR16 *dest, IN UINTN destsize, IN CHAR16 *fstr, IN va_list args)
 {
     CHAR16 tempbuf[1024];
     FormatString(tempbuf, fstr, args);
-    strlcpy(dest, tempbuf, n);
+    StrlCpy(dest, tempbuf, destsize);
 }
 
-VOID snPrintf(OUT CHAR16 *buf, IN INT32 n, IN CHAR16 *fstr, ...)
+VOID snPrintf(OUT CHAR16 *dest, IN UINTN destsize, IN CHAR16 *fstr, ...)
 {
     va_list args;
     va_start(args, fstr);
-    vsnPrintf(buf, n, fstr, args);
+    vsnPrintf(dest, destsize, fstr, args);
 }
 
+// This is just to make the linker happy
 VOID *memcpy(VOID *dest, const VOID *src, UINTN n)
 {
     BS->CopyMem(dest, (VOID *)src, n);
     return dest;
 }
 
-BOOLEAN StrToUInt(CHAR16 *str, OUT UINTN *out) {
+BOOLEAN StrToUInt(IN CHAR16 *str, OUT UINTN *out) {
     CHAR16 *s = str;
     const CHAR16 *cs = str;
     INT32 numlen = 0;
@@ -251,7 +240,7 @@ BOOLEAN StrToUInt(CHAR16 *str, OUT UINTN *out) {
     return TRUE;
 }
 
-UINTN pow(UINTN base, UINTN exponent)
+UINTN pow(IN UINTN base, IN UINTN exponent)
 {
     UINTN num = 1;
     for (UINT32 i=0; i<exponent; i++)

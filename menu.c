@@ -14,7 +14,7 @@ const EFI_MENU_PAGE DefaultPage = {
     .ProcessInput = NULL,
     .Update = NULL,
     .AwaitingInput = FALSE,
-    .InputBuffer = u"\0",
+    .InputBuffer = u"",
     .InputLength = 0,
 };
 
@@ -57,9 +57,7 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
         [EfiMainMenuExit]           = u"Exit",
     };
     INT32 TopRow = cOut->Mode->CursorRow;
-    CHAR16 *Arrow = u" <-";
-    if (This->RedrawNeeded)
-    {
+    if (This->RedrawNeeded) {
         cOut->ClearScreen(cOut);
         This->RedrawNeeded = FALSE;
         Printf(u"===== Main Menu =====\r\n\n");
@@ -68,22 +66,26 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 
         for (INT32 i=0; i < EfiMainMenuN; i++)
         {
-            CHAR16 *Suffix = u"";
+            cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
             if (i == This->CurrentOption)
-                Suffix = Arrow;
+                cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
 
-            Printf(u"%s%s\r\n", Options[i], Suffix);
+            Printf(u"%s\r\n", Options[i]);
         }
+        cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 
         cOut->SetCursorPosition(cOut, 0, TopRow);
         return;
     }
 
     cOut->SetCursorPosition(cOut, 0, TopRow + This->PrevOption);
-    Printf(u"%s   \r", Options[This->PrevOption]);
+    cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
+    Printf(u"%s\r", Options[This->PrevOption]);
     cOut->SetCursorPosition(cOut, 0, TopRow + This->CurrentOption);
-    Printf(u"%s%s\r", Options[This->CurrentOption], Arrow);
+    cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
+    Printf(u"%s\r", Options[This->CurrentOption]);
     cOut->SetCursorPosition(cOut, 0, TopRow);
+    cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 }
 
 // Initialize MainMenu Page
@@ -120,9 +122,9 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
             UINTN num;
             // This *should* be protected against invalid inputs like 'u' or ' '
             StrToUInt(This->InputBuffer, &num);
-            cOut->SetMode(cOut, num);
+            cOut->SetMode(cOut, num - 1);
         }
-        else if (Key->UnicodeChar >= '0' && Key->UnicodeChar <= '9' && Key->UnicodeChar - '0' < cOut->Mode->MaxMode)
+        else if (Key->UnicodeChar > '0' && Key->UnicodeChar <= '9' && Key->UnicodeChar - '0' <= cOut->Mode->MaxMode)
             This->InputBuffer[0] = Key->UnicodeChar;
 
         This->InputBuffer[1] = '\0';
@@ -154,8 +156,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
         [EfiScreenInfoMenuSetTextMode] = u"Set Text Mode",
         [EfiScreenInfoMenuBack]        = u"Back to Main Menu",
     };
-    INT32 TopRow = cOut->Mode->CursorRow;
-    CHAR16 *Arrow = u" <-";
+    INT32 TopSelectableRow = cOut->Mode->CursorRow;
     if (This->RedrawNeeded || This->AwaitingInput)
     {
         This->RedrawNeeded = FALSE;
@@ -174,7 +175,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
             u"CursorVisible: %d\r\n"
             u"Columns: %d\r\n"
             u"Rows: %d\r\n\n",
-            cOut->Mode->Mode,
+            cOut->Mode->Mode+1,
             cOut->Mode->MaxMode,
             cOut->Mode->CursorRow,
             cOut->Mode->CursorColumn,
@@ -182,37 +183,45 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
             cols, rows
         );
 
+        CHAR16 Suffix[16];
         for (INT32 i=0; i<cOut->Mode->MaxMode; i++)
         {
+            Suffix[0] = '\0'; // Reset String to null
+            if (i == cOut->Mode->Mode)
+                StrCpySafe(Suffix, u" (selected)");
+
             cOut->QueryMode(cOut, i, &cols, &rows);
-            Printf(u"Mode %d: %d x %d\r\n", i, cols, rows);
+            Printf(u"Mode %d: %d x %d%s\r\n", i+1, cols, rows, Suffix);
         }
         Printf(u"\n");
+        TopSelectableRow = cOut->Mode->CursorRow;
 
-        TopRow = cOut->Mode->CursorRow;
-
-        CHAR16 Suffix[16];
         for (INT32 i=0; i < EfiScreenInfoMenuN; i++)
         {
-            Suffix[0] = '\0';
+            cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
+            Suffix[0] = '\0'; // Reset String to null
             if (i == This->CurrentOption) {
-                strlcpy(Suffix, Arrow, 4);
+                cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
                 if (This->AwaitingInput)
-                    sPrintf(Suffix, u" (0-%d): %s", cOut->Mode->MaxMode-1, This->InputBuffer);
+                    sPrintfSafe(Suffix, u" (1-%d): %s", cOut->Mode->MaxMode, This->InputBuffer);
             }
 
             Printf(u"%s%s\r\n", Options[i], Suffix);
         }
+        cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 
-        cOut->SetCursorPosition(cOut, 0, TopRow);
+        cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
         return;
     }
 
-    cOut->SetCursorPosition(cOut, 0, TopRow + This->PrevOption);
-    Printf(u"%s   \r", Options[This->PrevOption]);
-    cOut->SetCursorPosition(cOut, 0, TopRow + This->CurrentOption);
-    Printf(u"%s%s\r", Options[This->CurrentOption], Arrow);
-    cOut->SetCursorPosition(cOut, 0, TopRow);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->PrevOption);
+    cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
+    Printf(u"%s\r", Options[This->PrevOption]);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->CurrentOption);
+    cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
+    Printf(u"%s\r", Options[This->CurrentOption]);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
+    cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 }
 
 // Initialize ScreenInfoMenu Page
@@ -224,9 +233,8 @@ EFI_MENU_PAGE *ScreenInfoMenu(VOID)
     ScreenInfoMenuPtr->ProcessInput = ScreenInfoMenuProcessInput;
     ScreenInfoMenuPtr->Update = ScreenInfoMenuUpdate;
 
-    const INT32 tmplen = 2;
-    CHAR16 tmp[tmplen];
-    IntToStr(tmp, cOut->Mode->Mode);
-    strlcpy(ScreenInfoMenuPtr->InputBuffer, tmp, tmplen);
+    CHAR16 tmp[2];
+    IntToStr(tmp, cOut->Mode->Mode + 1);
+    StrlCpy(ScreenInfoMenuPtr->InputBuffer, tmp, ARRAY_LEN(ScreenInfoMenuPtr->InputBuffer));
     return ScreenInfoMenuPtr;
 }
