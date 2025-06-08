@@ -101,8 +101,6 @@ EFI_MENU_PAGE *MainMenu(VOID)
 // ====== Screen Info Menu ======
 // ==============================
 
-const INT32 SCREEN_INFO_MAX_INPUT = 1;
-
 typedef enum EFI_SCREEN_INFO_MENU_OPTIONS {
     EfiScreenInfoMenuSetTextMode,
     EfiScreenInfoMenuBack,
@@ -118,15 +116,13 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
         if (Key->UnicodeChar == UnicodeCharNewline) {
             This->AwaitingInput = FALSE;
             This->RedrawNeeded = TRUE;
-            // TODO Parse input and set mode accordingly
-        } else if (Key->UnicodeChar == 0x08) {
-            if (This->InputLength > 0)
-                This->InputLength--;
-        } else if (Key->UnicodeChar > '0') {
-            if (This->InputLength < SCREEN_INFO_MAX_INPUT)
-                This->InputBuffer[This->InputLength++] = Key->UnicodeChar;
+            UINTN num;
+            StrToUInt(This->InputBuffer, &num);
+            cOut->SetMode(cOut, num);
+        } else if (Key->UnicodeChar >= '0' && Key->UnicodeChar <= '9' && Key->UnicodeChar - '0' < cOut->Mode->MaxMode) {
+            This->InputBuffer[0] = Key->UnicodeChar;
         }
-        This->InputBuffer[This->InputLength] = '\0';
+        This->InputBuffer[1] = '\0';
     }
     else if (Key->UnicodeChar == UnicodeCharNewline) {
         switch (This->CurrentOption) {
@@ -186,7 +182,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
         for (INT32 i=0; i<cOut->Mode->MaxMode; i++)
         {
             cOut->QueryMode(cOut, i, &cols, &rows);
-            Printf(u"Mode %d: %d x %d\r\n", i+1, cols, rows);
+            Printf(u"Mode %d: %d x %d\r\n", i, cols, rows);
         }
 
         TopRow = cOut->Mode->CursorRow;
@@ -198,7 +194,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
             if (i == This->CurrentOption) {
                 strlcpy(Suffix, Arrow, 4);
                 if (This->AwaitingInput)
-                    sPrintf(Suffix, u" (1-%d): %s", cOut->Mode->MaxMode, This->InputBuffer);
+                    sPrintf(Suffix, u" (0-%d): %s", cOut->Mode->MaxMode-1, This->InputBuffer);
             }
 
             Printf(u"%s%s\r\n", Options[i], Suffix);
@@ -223,5 +219,10 @@ EFI_MENU_PAGE *ScreenInfoMenu(VOID)
     *ScreenInfoMenuPtr = DefaultPage;
     ScreenInfoMenuPtr->ProcessInput = ScreenInfoMenuProcessInput;
     ScreenInfoMenuPtr->Update = ScreenInfoMenuUpdate;
+
+    const INT32 tmplen = 2;
+    CHAR16 tmp[tmplen];
+    IntToStr(tmp, cOut->Mode->Mode);
+    strlcpy(ScreenInfoMenuPtr->InputBuffer, tmp, tmplen);
     return ScreenInfoMenuPtr;
 }

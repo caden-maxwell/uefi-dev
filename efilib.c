@@ -8,7 +8,7 @@ EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn;
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 EFI_STATUS Status;
 
-void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
+VOID InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
 {
     ST = SystemTable;
     BS = ST->BootServices;
@@ -21,7 +21,7 @@ void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable)
 // ===== Print functions =====
 // ===========================
 
-void PutChar(CHAR16 ch)
+VOID PutChar(CHAR16 ch)
 {
     // ConOut->OutputString expects a null-terminated string of chars
     CHAR16 str_arr[2] = { ch, u'\0' };
@@ -30,7 +30,7 @@ void PutChar(CHAR16 ch)
 
 // Expand upon PrintXXX in the future to use any type of int (byte, short, int, long)
 // Buffer size would be ceil(log_(base)^(2^num_bits - 1)) + 1
-void IntToStr(CHAR16 *buffer, INT32 num)
+VOID IntToStr(CHAR16 *buffer, INT32 num)
 {
     BOOLEAN negative = num < 0;
     if (negative) num = -num;
@@ -52,7 +52,7 @@ void IntToStr(CHAR16 *buffer, INT32 num)
     }
 }
 
-void UIntToStr(CHAR16 *buffer, UINT32 num)
+VOID UIntToStr(CHAR16 *buffer, UINT32 num)
 {
     UINTN i = 0;
     do {
@@ -70,7 +70,7 @@ void UIntToStr(CHAR16 *buffer, UINT32 num)
     }
 }
 
-void HexToStr(CHAR16 *buffer, UINT32 hexnum) // Expects an unsigned int
+VOID HexToStr(CHAR16 *buffer, UINT32 hexnum) // Expects an unsigned int
 {
     CHAR16 *digits = u"0123456789ABCDEF";
     UINTN i = 0;
@@ -194,7 +194,8 @@ VOID sPrintf(OUT CHAR16 *buf, IN CHAR16 *fstr, ...)
     vsPrintf(buf, fstr, args);
 }
 
-UINTN strlcpy(OUT CHAR16 *dest, const CHAR16 *source, UINTN size) {
+UINTN strlcpy(OUT CHAR16 *dest, const CHAR16 *source, UINTN size)
+{
     CHAR16 *dst = dest;
     const CHAR16 *src = source;
     CHAR16 *end = dest + size;
@@ -226,7 +227,34 @@ VOID snPrintf(OUT CHAR16 *buf, IN INT32 n, IN CHAR16 *fstr, ...)
     vsnPrintf(buf, n, fstr, args);
 }
 
-VOID *memcpy(VOID *dest, const VOID *src, UINTN n) {
+VOID *memcpy(VOID *dest, const VOID *src, UINTN n)
+{
     BS->CopyMem(dest, (VOID *)src, n);
     return dest;
+}
+
+BOOLEAN StrToUInt(CHAR16 *str, OUT UINTN *out) {
+    CHAR16 *s = str;
+    const CHAR16 *cs = str;
+    INT32 numlen = 0;
+    while (*s != '\0' && *s >= '0' && *s++ <= '9')
+        numlen++;
+    
+    if (numlen == 0) return FALSE;
+
+    UINTN sum = 0;
+    for (INT32 i=numlen-1, j=0; i>=0; i--, j++) {
+        UINT32 tmp = cs[i] - '0';
+        sum += tmp * pow(10, j);
+    }
+    *out = sum;
+    return TRUE;
+}
+
+UINTN pow(UINTN base, UINTN exponent)
+{
+    UINTN num = 1;
+    for (UINT32 i=0; i<exponent; i++)
+        num *= base;
+    return num;
 }

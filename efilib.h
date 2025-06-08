@@ -16,11 +16,14 @@ extern EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 extern EFI_STATUS Status;
 // ----- Globals -----
 
-void InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable);
-void Printf(IN CHAR16 *fmt, ...);
-void sPrintf(OUT CHAR16 *buf, IN CHAR16 *fmt, ...);
+VOID InitGlobalVars(EFI_SYSTEM_TABLE *SystemTable);
+VOID Printf(IN CHAR16 *fmt, ...);
+VOID sPrintf(OUT CHAR16 *buf, IN CHAR16 *fmt, ...);
 VOID snPrintf(OUT CHAR16 *buf, IN INT32 n, IN CHAR16 *fstr, ...);
-void PutChar(CHAR16 ch);
+VOID PutChar(CHAR16 ch);
 UINTN strlcpy(OUT CHAR16 *dest, const CHAR16 *source, UINTN size);
+VOID IntToStr(CHAR16 *buffer, INT32 num);
+BOOLEAN StrToUInt(CHAR16 *str, OUT UINTN *out);
+UINTN pow(UINTN base, UINTN exponent);
 
 #endif //_EFILIB_H
