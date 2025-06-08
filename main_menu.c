@@ -3,6 +3,9 @@
 typedef enum EFI_MAIN_MENU_OPTIONS {
     EfiMainMenuScreenInfoMenu,
     EfiMainMenuKernelStart,
+    EfiMainMenuSubMenu1,
+    EfiMainMenuSubMenu2,
+    EfiMainMenuSubMenu3,
     EfiMainMenuExit,
     EfiMainMenuN
 } EFI_MAIN_MENU_OPTIONS;
@@ -43,7 +46,10 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 {
     CHAR16 *Options[EfiMainMenuN] = {
         [EfiMainMenuScreenInfoMenu] = u"Screen Info",
-        [EfiMainMenuKernelStart]    = u"Start Kernel >:)",
+        [EfiMainMenuKernelStart]    = u"Launch Kernel",
+        [EfiMainMenuSubMenu1]       = u"SubMenu 1",
+        [EfiMainMenuSubMenu2]       = u"SubMenu 2",
+        [EfiMainMenuSubMenu3]       = u"SubMenu 3",
         [EfiMainMenuExit]           = u"Exit",
     };
     INT32 TopSelectableRow = cOut->Mode->CursorRow;
