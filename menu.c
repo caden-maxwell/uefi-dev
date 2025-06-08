@@ -56,13 +56,13 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
         [EfiMainMenuScreenInfoMenu] = u"Screen Info",
         [EfiMainMenuExit]           = u"Exit",
     };
-    INT32 TopRow = cOut->Mode->CursorRow;
+    INT32 TopSelectableRow = cOut->Mode->CursorRow;
     if (This->RedrawNeeded) {
         cOut->ClearScreen(cOut);
         This->RedrawNeeded = FALSE;
         Printf(u"===== Main Menu =====\r\n\n");
 
-        TopRow = cOut->Mode->CursorRow;
+        TopSelectableRow = cOut->Mode->CursorRow;
 
         for (INT32 i=0; i < EfiMainMenuN; i++)
         {
@@ -74,17 +74,17 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
         }
         cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 
-        cOut->SetCursorPosition(cOut, 0, TopRow);
+        cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
         return;
     }
 
-    cOut->SetCursorPosition(cOut, 0, TopRow + This->PrevOption);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->PrevOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
     Printf(u"%s\r", Options[This->PrevOption]);
-    cOut->SetCursorPosition(cOut, 0, TopRow + This->CurrentOption);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->CurrentOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
     Printf(u"%s\r", Options[This->CurrentOption]);
-    cOut->SetCursorPosition(cOut, 0, TopRow);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 }
 
