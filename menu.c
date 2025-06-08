@@ -113,15 +113,18 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
     // Select submenu/perform action
     This->PrevOption = This->CurrentOption;
     if (This->AwaitingInput) {
-        if (Key->UnicodeChar == UnicodeCharNewline) {
+        if (Key->UnicodeChar == UnicodeCharNewline)
+        {
             This->AwaitingInput = FALSE;
             This->RedrawNeeded = TRUE;
             UINTN num;
+            // This *should* be protected against invalid inputs like 'u' or ' '
             StrToUInt(This->InputBuffer, &num);
             cOut->SetMode(cOut, num);
-        } else if (Key->UnicodeChar >= '0' && Key->UnicodeChar <= '9' && Key->UnicodeChar - '0' < cOut->Mode->MaxMode) {
-            This->InputBuffer[0] = Key->UnicodeChar;
         }
+        else if (Key->UnicodeChar >= '0' && Key->UnicodeChar <= '9' && Key->UnicodeChar - '0' < cOut->Mode->MaxMode)
+            This->InputBuffer[0] = Key->UnicodeChar;
+
         This->InputBuffer[1] = '\0';
     }
     else if (Key->UnicodeChar == UnicodeCharNewline) {
