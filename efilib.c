@@ -89,7 +89,7 @@ void HexToStr(CHAR16 *buffer, UINT32 hexnum) // Expects an unsigned int
     }
 }
 
-VOID FormatString(CHAR16 *str_buf, CHAR16 *fstr, va_list args)
+VOID FormatString(OUT CHAR16 *str_buf, CHAR16 *fstr, va_list args)
 {
     CHAR16 ch;
     UINTN buf_idx = 0;
@@ -180,4 +180,53 @@ VOID Printf(CHAR16 *fstr, ...)
     va_list args;
     va_start(args, fstr);
     vPrintf(fstr, args);
+}
+
+VOID vsPrintf(CHAR16 *buf, CHAR16 *fstr, va_list args)
+{
+    FormatString(buf, fstr, args);
+}
+
+VOID sPrintf(OUT CHAR16 *buf, IN CHAR16 *fstr, ...)
+{
+    va_list args;
+    va_start(args, fstr);
+    vsPrintf(buf, fstr, args);
+}
+
+UINTN strlcpy(OUT CHAR16 *dest, const CHAR16 *source, UINTN size) {
+    CHAR16 *dst = dest;
+    const CHAR16 *src = source;
+    CHAR16 *end = dest + size;
+    while (*src != '\0' && dst < end)
+        *dst++ = *src++;
+
+    if (dst < end)
+        *dst = 0;
+    else if (size > 0)
+        dst[-1] = 0;
+
+    while (*src != '\0')
+        src++;
+
+    return src - source;
+}
+
+VOID vsnPrintf(OUT CHAR16 *dest, INT32 n, CHAR16 *fstr, va_list args)
+{
+    CHAR16 tempbuf[1024];
+    FormatString(tempbuf, fstr, args);
+    strlcpy(dest, tempbuf, n);
+}
+
+VOID snPrintf(OUT CHAR16 *buf, IN INT32 n, IN CHAR16 *fstr, ...)
+{
+    va_list args;
+    va_start(args, fstr);
+    vsnPrintf(buf, n, fstr, args);
+}
+
+VOID *memcpy(VOID *dest, const VOID *src, UINTN n) {
+    BS->CopyMem(dest, (VOID *)src, n);
+    return dest;
 }

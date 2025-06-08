@@ -537,6 +537,15 @@ EFI_STATUS
     IN UINTN Microseconds
 );
 
+// UEFI Spec 7.5.3
+typedef
+VOID
+(EFIAPI *EFI_COPY_MEM) (
+    IN VOID  *Destination,
+    IN VOID  *Source,
+    IN UINTN Length
+);
+
 // UEFI Spec 4.4.1
 typedef struct EFI_BOOT_SERVICES{
     EFI_TABLE_HEADER     Hdr;
@@ -656,10 +665,9 @@ typedef struct EFI_BOOT_SERVICES{
     //
     // Miscellaneous Services
     //
-    // EFI_COPY_MEM           CopyMem;        // EFI 1.1+
+    EFI_COPY_MEM CopyMem;        // EFI 1.1+
     // EFI_SET_MEM            SetMem;         // EFI 1.1+
     // EFI_CREATE_EVENT_EX    CreateEventEx;  // UEFI 2.0+
-    void *CopyMem;        // EFI 1.1+
     void *SetMem;         // EFI 1.1+
     void *CreateEventEx;  // UEFI 2.0+
 } EFI_BOOT_SERVICES;

@@ -15,7 +15,7 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
     EFI_MENU_PAGE *Menus[] = {
         [EfiMainMenuState] = MainMenu(),
-        [EfiOtherMenuState] = OtherMenu()
+        [EfiScreenInfoMenuState] = ScreenInfoMenu()
     };
 
     // Start main event loop
@@ -31,10 +31,7 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
         CurrentMenu = Menus[NextMenuState];
         if (CurrentMenu != PrevMenu)
-        {
-            cOut->ClearScreen(cOut);
-            CurrentMenu->InitialRender = TRUE;
-        }
+            CurrentMenu->RedrawNeeded = TRUE;
 
         CurrentMenu->Update(CurrentMenu);
 

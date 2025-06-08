@@ -16,7 +16,7 @@ typedef struct EFI_MENU_PAGE EFI_MENU_PAGE;
 
 typedef enum EFI_MENU_STATE {
     EfiMainMenuState,
-    EfiOtherMenuState,
+    EfiScreenInfoMenuState,
     EfiExitState
 } EFI_MENU_STATE;
 
@@ -35,15 +35,23 @@ VOID
     IN EFI_MENU_PAGE *This
 );
 
+typedef struct EFI_MENU_DEBUG_INFO {
+    INT32 NumDraws;
+} EFI_MENU_DEBUG_INFO;
+
 typedef struct EFI_MENU_PAGE {
-    EFI_MENU_PROCESS_INPUT ProcessInput;
-    EFI_MENU_UPDATE        Update;
-    BOOLEAN                InitialRender;
+    BOOLEAN                AwaitingInput;
+    BOOLEAN                RedrawNeeded;
     INT32                  CurrentOption;
     INT32                  PrevOption;
+    EFI_MENU_DEBUG_INFO    DebugInfo;
+    EFI_MENU_PROCESS_INPUT ProcessInput;
+    EFI_MENU_UPDATE        Update;
+    CHAR16                 InputBuffer[1024];
+    INT32                  InputLength;
 } EFI_MENU_PAGE;
 
 EFI_MENU_PAGE *MainMenu(VOID);
-EFI_MENU_PAGE *OtherMenu(VOID);
+EFI_MENU_PAGE *ScreenInfoMenu(VOID);
 
 #endif // _MENU_H
