@@ -18,8 +18,11 @@ typedef struct EFI_MENU_PAGE EFI_MENU_PAGE;
 typedef enum EFI_MENU_STATE {
     EfiMainMenuState,
     EfiScreenInfoMenuState,
+    EfiKernelStartState,
     EfiExitState
 } EFI_MENU_STATE;
+
+extern const EFI_MENU_PAGE DefaultPage;
 
 // ===== Generic Menu functions =====
 
@@ -54,5 +57,6 @@ typedef struct EFI_MENU_PAGE {
 
 EFI_MENU_PAGE *MainMenu(VOID);
 EFI_MENU_PAGE *ScreenInfoMenu(VOID);
+EFI_MENU_PAGE *KernelStartMenu(VOID);
 
 #endif // _MENU_H

@@ -1,4 +1,4 @@
-SOURCES = efi.c efilib.c menu.c
+SOURCES = efi.c efilib.c menu.c main_menu.c screeninfo_menu.c
 OBJS    = $(SOURCES:.c=.o)
 DEPENDS = $(OBJS:.o=.d)
 TARGET  = BOOTX64.EFI
