@@ -1,7 +1,8 @@
 #include "efilib.h"
 #include "menu.h"
 
-EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
+EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
+{
     (void)ImageHandle; // Unused for now
 
     InitGlobalVars(SystemTable);
@@ -15,14 +16,14 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
     EFI_MENU_PAGE *Menus[] = {
         [EfiMainMenuState] = MainMenu(),
-        [EfiScreenInfoMenuState] = ScreenInfoMenu()
-    };
+        [EfiScreenInfoMenuState] = ScreenInfoMenu()};
 
     // Start main event loop
     EFI_MENU_PAGE *PrevMenu = NULL;
     EFI_MENU_PAGE *CurrentMenu = Menus[EfiMainMenuState];
     EFI_INPUT_KEY Key;
-    while (TRUE) {
+    while (TRUE)
+    {
         cIn->ReadKeyStroke(cIn, &Key);
         EFI_MENU_STATE NextMenuState = CurrentMenu->ProcessInput(CurrentMenu, &Key);
 

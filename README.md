@@ -1,6 +1,6 @@
 # UEFI Dev
 
-I've never really understood the difference between things like BIOS, UEFI, bootloaders, and the kernel, or really much of anything that goes on when a computer boots. This is my space to learn about all of that, specifically diving into the UEFI spec and how to create UEFI applications. In the future, maybe I'll even attempt to write my own kernel and mini OS. We'll see!
+This is a space to learn about UEFI development, specifically diving into the UEFI spec and how to create UEFI applications.
 
 ## Requirements:
 - `make`
@@ -14,7 +14,7 @@ I've never really understood the difference between things like BIOS, UEFI, boot
 
 Once you have these installed, you can run the following commands:
 
-### `make [all]`:
+### `make`:
 
 Compiles the UEFI application, and generates an image named `OS.img`.
 

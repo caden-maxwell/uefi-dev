@@ -4,16 +4,16 @@
 #define _EFILIB_H
 
 // Macros
-#define FALSE (BOOLEAN)(0==1)
-#define TRUE  (BOOLEAN)(0==0)
-#define NULL  0
+#define FALSE (BOOLEAN)(0 == 1)
+#define TRUE (BOOLEAN)(0 == 0)
+#define NULL 0
 
-#define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
+#define ARRAY_LEN(x) (sizeof(x) / sizeof((x)[0]))
 #define sPrintfSafe(dst, fstr, ...) snPrintf(dst, ARRAY_LEN(dst), fstr, __VA_ARGS__)
 #define StrCpySafe(dst, src) StrlCpy(dst, src, ARRAY_LEN(dst))
 
 // Globals
-extern EFI_SYSTEM_TABLE  *ST;
+extern EFI_SYSTEM_TABLE *ST;
 extern EFI_BOOT_SERVICES *BS;
 extern EFI_RUNTIME_SERVICES *RS;
 extern EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn;
