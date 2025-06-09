@@ -31,7 +31,15 @@ CFLAGS = \
 
 .PHONY: all run clean fresh 
 
-all: $(IMG)
+run: $(IMG)
+	@echo "Running $<..."
+	qemu-system-x86_64 \
+		-drive format=raw,file=$< \
+		-bios $(FIRMWARE_BIN) \
+		-m 256M \
+		-machine q35 \
+		-net none \
+		--serial file:$(QEMU_LOG)
 
 $(TARGET): $(OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@
@@ -51,18 +59,6 @@ $(IMG): $(TARGET)
 	mmd -i $(TMP_PART) ::/EFI/BOOT
 	mcopy -i $(TMP_PART) $< ::/EFI/BOOT/$(TARGET)
 	dd if=$(TMP_PART) of=$@ bs=512 count=91669 seek=2048 conv=notrunc
-
-run: $(IMG)
-	@echo "Running $<..."
-	qemu-system-x86_64 \
-		-drive format=raw,file=$< \
-		-bios $(FIRMWARE_BIN) \
-		-m 256M \
-		-machine q35 \
-		-net none \
-		--serial file:$(QEMU_LOG)
-
-fresh: clean all
 
 clean:
 	rm -f *.img *.EFI *.log *.o *.d

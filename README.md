@@ -10,25 +10,14 @@ This is a space to learn about UEFI development, specifically diving into the UE
 - `mtools`
 - `parted`
 
-## `Makefile` usage:
+## Usage:
 
 Once you have these installed, you can run the following commands:
 
-### `make`:
-
-Compiles the UEFI application, and generates an image named `OS.img`.
-
-### `make run`:
+### `make [run]`:
 
 Runs the image in QEMU with the required OVMF firmware.
 
 ### `make clean`:
 
-Removes all generated files.
-
-### `make fresh`:
-
-Equivalent to:
-```bash
-$ make clean all
-```
+Removes all `make`-generated files.
