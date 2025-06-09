@@ -16,7 +16,7 @@ Once you have these installed, you can run the following commands:
 
 ### `make [run]`:
 
-Runs the image in QEMU with the required OVMF firmware.
+Builds the BOOTX64.EFI application, creates an image, and runs QEMU with the image and the included OVMF firmware.
 
 ### `make clean`:
 
