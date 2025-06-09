@@ -18,7 +18,7 @@ VOID InitGlobalVars(IN EFI_SYSTEM_TABLE *SystemTable)
 }
 
 // ===========================
-// ===== Print functions =====
+// ===== Helper functions =====
 // ===========================
 
 VOID PutChar(IN CHAR16 ch)
@@ -28,8 +28,8 @@ VOID PutChar(IN CHAR16 ch)
     cOut->OutputString(cOut, str_arr);
 }
 
-// Expand upon PrintXXX in the future to use any type of int (byte, short, int, long)
-// Buffer size would be ceil(log_(base)^(2^num_bits - 1)) + 1
+// TODO: Expand upon IntToStr in the future to use any type of int (byte, short, int, long)
+//   for any base: 2, 8, 10, 16. Buffer size would be ceil(log_(base)^(2^num_bits - 1)) + 1
 VOID IntToStr(OUT CHAR16 *buffer, IN INT32 num)
 {
     BOOLEAN negative = num < 0;
