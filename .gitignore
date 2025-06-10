@@ -1,8 +1,6 @@
-*.o
-*.so
+build
 *.EFI
 *.img
 *.elf
 *.log
-*.a
-*.d
+.vscode

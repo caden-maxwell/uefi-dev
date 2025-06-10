@@ -16,6 +16,7 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     EFI_MENU_PAGE *Menus[] = {
         [EfiMainMenuState] = MainMenu(),
+        [EfiGOPInfoMenuState] = GOPInfoMenu(),
         [EfiScreenInfoMenuState] = ScreenInfoMenu()};
 
     // Start main event loop

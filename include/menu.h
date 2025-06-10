@@ -22,6 +22,7 @@ typedef enum EFI_MENU_STATE
     EfiMainMenuState,
     EfiScreenInfoMenuState,
     EfiKernelStartState,
+    EfiGOPInfoMenuState,
     EfiExitState
 } EFI_MENU_STATE;
 
@@ -56,6 +57,6 @@ typedef struct EFI_MENU_PAGE
 
 EFI_MENU_PAGE *MainMenu(VOID);
 EFI_MENU_PAGE *ScreenInfoMenu(VOID);
-EFI_MENU_PAGE *KernelStartMenu(VOID);
+EFI_MENU_PAGE *GOPInfoMenu(VOID);
 
 #endif // _MENU_H

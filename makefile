@@ -1,7 +1,11 @@
-SOURCES = efi.c efilib.c menu.c main_menu.c screeninfo_menu.c
-OBJS    = $(SOURCES:.c=.o)
+SRC_DIR := src
+INC_DIR := include
+BUILD_DIR := build
+
+SOURCES := $(wildcard $(SRC_DIR)/*.c)
+OBJS    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
 DEPENDS = $(OBJS:.o=.d)
-TARGET  = BOOTX64.EFI
+TARGET  := BOOTX64.EFI
 
 IMG := OS.img
 TMP_PART = /tmp/part.img
@@ -27,7 +31,8 @@ CFLAGS = \
 	-Wall -Wextra -Wpedantic \
 	-mno-red-zone \
 	-MMD \
-	-ffreestanding
+	-ffreestanding \
+	-I$(INC_DIR)
 
 .PHONY: all run clean fresh 
 
@@ -40,11 +45,6 @@ run: $(IMG)
 		-machine q35 \
 		-net none \
 		--serial file:$(QEMU_LOG)
-
-$(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $^ -o $@
-
--include $(DEPENDS)
 
 # Create the image with the EFI application and startup script
 $(IMG): $(TARGET)
@@ -60,5 +60,16 @@ $(IMG): $(TARGET)
 	mcopy -i $(TMP_PART) $< ::/EFI/BOOT/$(TARGET)
 	dd if=$(TMP_PART) of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
+$(TARGET): $(OBJS)
+	$(CC) $(LDFLAGS) $^ -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+-include $(DEPENDS)
+
 clean:
-	rm -f *.img *.EFI *.log *.o *.d
+	rm -rf *.img *.EFI *.log $(BUILD_DIR)
