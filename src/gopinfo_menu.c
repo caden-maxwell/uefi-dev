@@ -92,9 +92,9 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 
 VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
 {
-    CHAR16 *Options[EfiGOPInfoMenuN] = {
+    CHAR16 *OptionLabels[EfiGOPInfoMenuN] = {
         [EfiGOPInfoMenuSetTextMode] = u"Set Text Mode",
-        [EfiGOPInfoMenuBack] = u"Back to Main Menu",
+        [EfiGOPInfoMenuBack]        = u"Back to Main Menu",
     };
 
     INT32 TopSelectableRow = cOut->Mode->CursorRow;
@@ -147,7 +147,7 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
                     sPrintfSafe(Suffix, u" (1-%d): %s", cOut->Mode->MaxMode, This->InputBuffer);
             }
 
-            Printf(u"%s%s\r\n", Options[i], Suffix);
+            Printf(u"%s%s\r\n", OptionLabels[i], Suffix);
         }
         cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 
@@ -157,10 +157,10 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
 
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->PrevOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
-    Printf(u"%s\r", Options[This->PrevOption]);
+    Printf(u"%s\r", OptionLabels[This->PrevOption]);
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->CurrentOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
-    Printf(u"%s\r", Options[This->CurrentOption]);
+    Printf(u"%s\r", OptionLabels[This->CurrentOption]);
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 }

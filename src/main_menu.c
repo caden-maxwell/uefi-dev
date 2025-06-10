@@ -3,6 +3,7 @@
 typedef enum EFI_MAIN_MENU_OPTIONS
 {
     EfiMainMenuScreenInfoMenu,
+    EfiMainMenuGOPInfoMenu,
     EfiMainMenuKernelStart,
     EfiMainMenuSubMenu1,
     EfiMainMenuSubMenu2,
@@ -21,10 +22,8 @@ EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
         {
         case EfiMainMenuScreenInfoMenu:
             return EfiScreenInfoMenuState;
-        case EfiMainMenuKernelStart:
-        {
-            break;
-        }
+        case EfiMainMenuGOPInfoMenu:
+            return EfiGOPInfoMenuState;
         case EfiMainMenuExit:
             return EfiExitState;
         }
@@ -50,13 +49,15 @@ EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 
 VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 {
-    CHAR16 *Options[EfiMainMenuN] = {
+    // Ordering does not matter here, see EFI_MAIN_MENU_OPTIONS
+    CHAR16 *OptionLabels[EfiMainMenuN] = {
         [EfiMainMenuScreenInfoMenu] = u"Screen Info",
-        [EfiMainMenuKernelStart] = u"Launch Kernel",
-        [EfiMainMenuSubMenu1] = u"SubMenu 1",
-        [EfiMainMenuSubMenu2] = u"SubMenu 2",
-        [EfiMainMenuSubMenu3] = u"SubMenu 3",
-        [EfiMainMenuExit] = u"Exit",
+        [EfiMainMenuGOPInfoMenu]    = u"GOP Info",
+        [EfiMainMenuKernelStart]    = u"Launch Kernel",
+        [EfiMainMenuSubMenu1]       = u"SubMenu 1",
+        [EfiMainMenuSubMenu2]       = u"SubMenu 2",
+        [EfiMainMenuSubMenu3]       = u"SubMenu 3",
+        [EfiMainMenuExit]           = u"Exit",
     };
     INT32 TopSelectableRow = cOut->Mode->CursorRow;
 
@@ -74,7 +75,7 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
             if (i == This->CurrentOption)
                 cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
 
-            Printf(u"%s\r\n", Options[i]);
+            Printf(u"%s\r\n", OptionLabels[i]);
         }
         cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 
@@ -84,10 +85,10 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->PrevOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
-    Printf(u"%s\r", Options[This->PrevOption]);
+    Printf(u"%s\r", OptionLabels[This->PrevOption]);
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->CurrentOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
-    Printf(u"%s\r", Options[This->CurrentOption]);
+    Printf(u"%s\r", OptionLabels[This->CurrentOption]);
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 }

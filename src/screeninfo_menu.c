@@ -92,9 +92,9 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
 
 VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
 {
-    CHAR16 *Options[EfiScreenInfoMenuN] = {
+    CHAR16 *OptionLabels[EfiScreenInfoMenuN] = {
         [EfiScreenInfoMenuSetTextMode] = u"Set Text Mode",
-        [EfiScreenInfoMenuBack] = u"Back to Main Menu",
+        [EfiScreenInfoMenuBack]        = u"Back to Main Menu",
     };
 
     INT32 TopSelectableRow = cOut->Mode->CursorRow;
@@ -147,7 +147,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
                     sPrintfSafe(Suffix, u" (1-%d): %s", cOut->Mode->MaxMode, This->InputBuffer);
             }
 
-            Printf(u"%s%s\r\n", Options[i], Suffix);
+            Printf(u"%s%s\r\n", OptionLabels[i], Suffix);
         }
         cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 
@@ -157,10 +157,10 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
 
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->PrevOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
-    Printf(u"%s\r", Options[This->PrevOption]);
+    Printf(u"%s\r", OptionLabels[This->PrevOption]);
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->CurrentOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
-    Printf(u"%s\r", Options[This->CurrentOption]);
+    Printf(u"%s\r", OptionLabels[This->CurrentOption]);
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 }

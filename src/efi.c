@@ -15,9 +15,9 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     cOut->ClearScreen(cOut);
 
     EFI_MENU_PAGE *Menus[] = {
-        [EfiMainMenuState] = MainMenu(),
-        [EfiGOPInfoMenuState] = GOPInfoMenu(),
-        [EfiScreenInfoMenuState] = ScreenInfoMenu()};
+        [EfiMainMenuState]       = MainMenu(),
+        [EfiScreenInfoMenuState] = ScreenInfoMenu(),
+        [EfiGOPInfoMenuState]    = GOPInfoMenu()};
 
     // Start main event loop
     EFI_MENU_PAGE *PrevMenu = NULL;
