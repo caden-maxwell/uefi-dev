@@ -49,6 +49,9 @@ typedef struct EFI_GUID {
     UINT8  Node[6];
 } PACKED EFI_GUID;
 
+#define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID \
+    {0x9042a9de, 0x23dc, 0x4a38, 0x96, 0xfb, {0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a}}
+
 // UEFI Spec. Appendix D
 #define HIGH_BIT 0x8000000000000000ULL
 #define EFI_SUCCESS              (EFI_STATUS)(0)
@@ -316,9 +319,9 @@ typedef struct {
 typedef
 EFI_STATUS
 (EFIAPI *EFI_GRAPHICS_OUTPUT_PROTOCOL_QUERY_MODE) (
-    IN EFI_GRAPHICS_OUTPUT_PROTOCOL          *This,
-    IN UINT32                                ModeNumber,
-    OUT UINTN                                *SizeOfInfo,
+    IN EFI_GRAPHICS_OUTPUT_PROTOCOL *This,
+    IN UINT32                       ModeNumber,
+    OUT UINTN                       *SizeOfInfo,
     OUT EFI_GRAPHICS_OUTPUT_MODE_INFORMATION **Info
 );
 
