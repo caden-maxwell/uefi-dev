@@ -648,6 +648,15 @@ VOID
     IN UINTN Length
 );
 
+// UEFI Spec 7.3.16
+typedef
+EFI_STATUS
+(EFIAPI *EFI_LOCATE_PROTOCOL) (
+    IN EFI_GUID *Protocol,
+    IN VOID     *Registration OPTIONAL,
+    OUT VOID    **Interface
+);
+
 // UEFI Spec 4.4.1
 typedef struct EFI_BOOT_SERVICES{
     EFI_TABLE_HEADER     Hdr;
@@ -749,12 +758,11 @@ typedef struct EFI_BOOT_SERVICES{
     //
     // EFI_PROTOCOLS_PER_HANDLE       ProtocolsPerHandle;     // EFI 1.1+
     // EFI_LOCATE_HANDLE_BUFFER       LocateHandleBuffer;     // EFI 1.1+
-    // EFI_LOCATE_PROTOCOL            LocateProtocol;         // EFI 1.1+
     // EFI_INSTALL_MULTIPLE_PROTOCOL_INTERFACES  InstallMultipleProtocolInterfaces;    // EFI 1.1+
     // EFI_UNINSTALL_MULTIPLE_PROTOCOL_INTERFACES UninstallMultipleProtocolInterfaces;   // EFI 1.1+*
     void *ProtocolsPerHandle;     // EFI 1.1+
     void *LocateHandleBuffer;     // EFI 1.1+
-    void *LocateProtocol;         // EFI 1.1+
+    EFI_LOCATE_PROTOCOL LocateProtocol;         // EFI 1.1+
     void *InstallMultipleProtocolInterfaces;    // EFI 1.1+
     void *UninstallMultipleProtocolInterfaces;   // EFI 1.1+*
 
