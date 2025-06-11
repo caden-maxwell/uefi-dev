@@ -49,7 +49,8 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
         if (NewMode != PrevMode)
         {
             Status = GOP->SetMode(GOP, NewMode);
-            if (Status == EFI_UNSUPPORTED || Status == EFI_DEVICE_ERROR) {
+            if (Status == EFI_UNSUPPORTED || Status == EFI_DEVICE_ERROR)
+            {
                 NewMode = PrevMode;
                 GOP->SetMode(GOP, NewMode);
             }

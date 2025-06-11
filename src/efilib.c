@@ -159,14 +159,14 @@ VOID FormatString(OUT CHAR16 *str_buf, IN CHAR16 *fstr, IN va_list args)
             }
             case u'h':
             {
-                // TODO: Fix messy recursion here
+                // TODO: Print to stderr for unimplemented func
                 va_arg(args, UINTN); // Still need to consume an arg so we can continue
                 Printf(u"(Format specifier '%%%c' is not yet implemented)", ch);
                 break;
             }
             default:
             {
-                // TODO: Fix messy recursion here
+                // TODO: Print to stderr for error
                 va_arg(args, UINTN);
                 Printf(u"(INVALID FORMAT SPECIFIER: '%%%c')", ch);
             }
