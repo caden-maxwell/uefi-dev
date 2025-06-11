@@ -51,7 +51,7 @@ typedef struct EFI_MENU_PAGE
     EFI_MENU_DEBUG_INFO DebugInfo;
     EFI_MENU_PROCESS_INPUT ProcessInput;
     EFI_MENU_UPDATE Update;
-    CHAR16 InputBuffer[1024];
+    CHAR16 InputBuffer[128];
     INT32 InputLength;
 } EFI_MENU_PAGE;
 
