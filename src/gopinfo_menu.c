@@ -38,6 +38,8 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
                 NewMode = 0;
         }
         // If [1-MaxMode], switch to mode
+        // TODO: Can only handle a single char in the buffer. Need to handle 2+
+        //  With my current device, there are 30 GOP modes
         else if (Key->UnicodeChar > '0' && Key->UnicodeChar - '0' - 1 <= MaxMode)
         {
             NewMode = Key->UnicodeChar - '0' - 1;
@@ -46,7 +48,11 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
         // If the mode changed, set it and update the screen
         if (NewMode != PrevMode)
         {
-            GOP->SetMode(GOP, NewMode);
+            Status = GOP->SetMode(GOP, NewMode);
+            if (Status == EFI_UNSUPPORTED || Status == EFI_DEVICE_ERROR) {
+                NewMode = PrevMode;
+                GOP->SetMode(GOP, NewMode);
+            }
             IntToStr(This->InputBuffer, ++NewMode);
             This->RedrawNeeded = TRUE;
         }
