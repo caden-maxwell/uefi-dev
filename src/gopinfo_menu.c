@@ -111,8 +111,6 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
         cOut->ClearScreen(cOut);
         This->DebugInfo.NumDraws++;
 
-        UINTN cols = 0;
-        UINTN rows = 0;
         UINTN InfoSize;
         EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *GOPInfo;
         GOP->QueryMode(GOP, GOP->Mode->Mode, &InfoSize, &GOPInfo);
