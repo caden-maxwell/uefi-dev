@@ -15,9 +15,9 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
     if (This->AwaitingInput)
     {
         // Get the current and max modes
-        INTN PrevMode = cOut->Mode->Mode;
+        INTN PrevMode = GOP->Mode->Mode;
         INTN NewMode = PrevMode;
-        INTN MaxMode = cOut->Mode->MaxMode - 1;
+        INTN MaxMode = GOP->Mode->MaxMode - 1;
 
         // If [Enter] or [ESC], stop getting input
         if (Key->UnicodeChar == UnicodeCharNewline || Key->ScanCode == ScanCodeEscape)
@@ -46,7 +46,7 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
         // If the mode changed, set it and update the screen
         if (NewMode != PrevMode)
         {
-            cOut->SetMode(cOut, NewMode);
+            GOP->SetMode(GOP, NewMode);
             IntToStr(This->InputBuffer, ++NewMode);
             This->RedrawNeeded = TRUE;
         }
@@ -93,7 +93,7 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
 VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
 {
     CHAR16 *OptionLabels[EfiGOPInfoMenuN] = {
-        [EfiGOPInfoMenuSetTextMode] = u"Set Text Mode",
+        [EfiGOPInfoMenuSetTextMode] = u"Set GOP Mode",
         [EfiGOPInfoMenuBack]        = u"Back to Main Menu",
     };
 
@@ -106,36 +106,27 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
 
         UINTN cols = 0;
         UINTN rows = 0;
-        cOut->QueryMode(cOut, cOut->Mode->Mode, &cols, &rows);
+        UINTN InfoSize;
+        EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *GOPInfo;
+        GOP->QueryMode(GOP, GOP->Mode->Mode, &InfoSize, &GOPInfo);
         Printf(
             u"===== GOP Info =====\r\n\n"
             u"Current Mode: %d\r\n\n"
             u"MaxMode: %d\r\n"
-            u"CursorRow: %d\r\n"
-            u"CursorColumn: %d\r\n"
-            u"CursorVisible: %d\r\n"
-            u"Columns: %d\r\n"
-            u"Rows: %d\r\n\n",
-            cOut->Mode->Mode + 1,
-            cOut->Mode->MaxMode,
-            cOut->Mode->CursorRow,
-            cOut->Mode->CursorColumn,
-            cOut->Mode->CursorVisible,
-            cols, rows);
-
-        CHAR16 Suffix[16];
-        for (INT32 i = 0; i < cOut->Mode->MaxMode; i++)
-        {
-            Suffix[0] = '\0'; // Reset String to null
-            if (i == cOut->Mode->Mode)
-                StrCpySafe(Suffix, u" (selected)");
-
-            cOut->QueryMode(cOut, i, &cols, &rows);
-            Printf(u"Mode %d: %d x %d%s\r\n", i + 1, cols, rows, Suffix);
-        }
-        Printf(u"\n");
+            u"Resolution: %dx%d\r\n"
+            u"BGRR: %x %x %x %x\r\n\n",
+            GOP->Mode->Mode + 1,
+            GOP->Mode->MaxMode,
+            GOPInfo->HorizontalResolution,
+            GOPInfo->VerticalResolution,
+            GOPInfo->PixelInformation.BlueMask,
+            GOPInfo->PixelInformation.GreenMask,
+            GOPInfo->PixelInformation.RedMask,
+            GOPInfo->PixelInformation.ReservedMask
+        );
         TopSelectableRow = cOut->Mode->CursorRow;
 
+        CHAR16 Suffix[16];
         for (INT32 i = 0; i < EfiGOPInfoMenuN; i++)
         {
             cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
@@ -144,7 +135,7 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
             {
                 cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
                 if (This->AwaitingInput)
-                    sPrintfSafe(Suffix, u" (1-%d): %s", cOut->Mode->MaxMode, This->InputBuffer);
+                    sPrintfSafe(Suffix, u" (1-%d): %s", GOP->Mode->MaxMode, This->InputBuffer);
             }
 
             Printf(u"%s%s\r\n", OptionLabels[i], Suffix);
@@ -174,8 +165,8 @@ EFI_MENU_PAGE *GOPInfoMenu(VOID)
     GOPInfoMenuPtr->ProcessInput = GOPInfoMenuProcessInput;
     GOPInfoMenuPtr->Update = GOPInfoMenuUpdate;
 
-    CHAR16 tmp[2];
-    IntToStr(tmp, cOut->Mode->Mode + 1);
+    CHAR16 tmp[3];
+    IntToStr(tmp, GOP->Mode->Mode + 1);
     StrCpySafe(GOPInfoMenuPtr->InputBuffer, tmp);
     return GOPInfoMenuPtr;
 }
