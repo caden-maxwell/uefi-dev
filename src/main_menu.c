@@ -80,6 +80,8 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
         cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 
         cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
+        GOP->Blt(GOP, NULL, EfiBltVideoToVideo, 0, 0, 300, 100, 300, 150, NULL);
+
         return;
     }
 

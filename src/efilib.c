@@ -6,6 +6,7 @@ EFI_BOOT_SERVICES *BS;
 EFI_RUNTIME_SERVICES *RS;
 EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn;
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
+EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 EFI_STATUS Status;
 
 VOID InitGlobalVars(IN EFI_SYSTEM_TABLE *SystemTable)
@@ -15,6 +16,8 @@ VOID InitGlobalVars(IN EFI_SYSTEM_TABLE *SystemTable)
     RS = ST->RuntimeServices;
     cIn = ST->ConIn;
     cOut = ST->ConOut;
+    EFI_GUID GOPGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+    BS->LocateProtocol(&GOPGuid, NULL, (VOID **)&GOP);
 }
 
 // ===========================
