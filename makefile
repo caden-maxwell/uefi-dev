@@ -37,7 +37,7 @@ CFLAGS = \
 .PHONY: run clean image
 
 run: $(IMG)
-	@echo "Running $<..."
+	@echo "Running QEMU with $<..."
 	qemu-system-x86_64 \
 		-drive format=raw,file=$< \
 		-bios $(FIRMWARE_BIN) \
