@@ -21,7 +21,7 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // Start main event loop
     EFI_MENU_PAGE *PrevMenuState = NULL;
-    EFI_MENU_PAGE *CurrentMenuState = MenuStates[EfiGOPInfoMenuState];
+    EFI_MENU_PAGE *CurrentMenuState = MenuStates[EfiMainMenuState];
     EFI_INPUT_KEY Key;
     while (TRUE)
     {

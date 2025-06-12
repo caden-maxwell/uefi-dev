@@ -40,9 +40,9 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
         // If [1-MaxMode], switch to mode
         // TODO: Can only handle a single char in the buffer. Need to handle 2+
         //  With my current device, there are 30 GOP modes
-        else if (Key->UnicodeChar > '0' && Key->UnicodeChar - '0' - 1 <= MaxMode)
+        else if (Key->UnicodeChar >= '0' && Key->UnicodeChar - '0' <= MaxMode)
         {
-            NewMode = Key->UnicodeChar - '0' - 1;
+            NewMode = Key->UnicodeChar - '0';
         }
 
         // If the mode changed, set it and update the screen
@@ -54,13 +54,11 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
                 NewMode = PrevMode;
                 GOP->SetMode(GOP, NewMode);
             }
-            IntToStr(This->InputBuffer, ++NewMode);
+            IntToStr(This->InputBuffer, NewMode);
             This->RedrawNeeded = TRUE;
         }
-
-        // Select submenu/perform action
     }
-    else
+    else // Select submenu/perform action
     {
         if (Key->UnicodeChar == UnicodeCharNewline)
         {
@@ -120,7 +118,7 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
             u"MaxMode: %d\r\n"
             u"Resolution: %dx%d\r\n"
             u"BGRR: %x %x %x %x\r\n\n",
-            GOP->Mode->Mode + 1,
+            GOP->Mode->Mode,
             GOP->Mode->MaxMode,
             GOPInfo->HorizontalResolution,
             GOPInfo->VerticalResolution,
@@ -140,7 +138,7 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
             {
                 cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
                 if (This->AwaitingInput)
-                    sPrintfSafe(Suffix, u" (1-%d): %s", GOP->Mode->MaxMode, This->InputBuffer);
+                    sPrintfSafe(Suffix, u" (0-%d): %s", GOP->Mode->MaxMode-1, This->InputBuffer);
             }
 
             Printf(u"%s%s\r\n", OptionLabels[i], Suffix);
@@ -171,7 +169,7 @@ EFI_MENU_PAGE *GOPInfoMenu(VOID)
     GOPInfoMenuPtr->Update = GOPInfoMenuUpdate;
 
     CHAR16 tmp[3];
-    IntToStr(tmp, GOP->Mode->Mode + 1);
+    IntToStr(tmp, GOP->Mode->Mode);
     StrCpySafe(GOPInfoMenuPtr->InputBuffer, tmp);
     return GOPInfoMenuPtr;
 }

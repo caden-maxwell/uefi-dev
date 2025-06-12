@@ -38,16 +38,16 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
                 NewMode = 0;
         }
         // If [1-MaxMode], switch to mode
-        else if (Key->UnicodeChar > '0' && Key->UnicodeChar - '0' - 1 <= MaxMode)
+        else if (Key->UnicodeChar >= '0' && Key->UnicodeChar - '0' <= MaxMode)
         {
-            NewMode = Key->UnicodeChar - '0' - 1;
+            NewMode = Key->UnicodeChar - '0';
         }
 
         // If the mode changed, set it and update the screen
         if (NewMode != PrevMode)
         {
             cOut->SetMode(cOut, NewMode);
-            IntToStr(This->InputBuffer, ++NewMode);
+            IntToStr(This->InputBuffer, NewMode);
             This->RedrawNeeded = TRUE;
         }
 
@@ -116,7 +116,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
             u"CursorVisible: %d\r\n"
             u"Columns: %d\r\n"
             u"Rows: %d\r\n\n",
-            cOut->Mode->Mode + 1,
+            cOut->Mode->Mode,
             cOut->Mode->MaxMode,
             cOut->Mode->CursorRow,
             cOut->Mode->CursorColumn,
@@ -131,7 +131,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
                 StrCpySafe(Suffix, u" (selected)");
 
             cOut->QueryMode(cOut, i, &cols, &rows);
-            Printf(u"Mode %d: %d x %d%s\r\n", i + 1, cols, rows, Suffix);
+            Printf(u"Mode %d: %d x %d%s\r\n", i, cols, rows, Suffix);
         }
         Printf(u"\n");
         TopSelectableRow = cOut->Mode->CursorRow;
@@ -144,7 +144,7 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
             {
                 cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
                 if (This->AwaitingInput)
-                    sPrintfSafe(Suffix, u" (1-%d): %s", cOut->Mode->MaxMode, This->InputBuffer);
+                    sPrintfSafe(Suffix, u" (0-%d): %s", cOut->Mode->MaxMode - 1, This->InputBuffer);
             }
 
             Printf(u"%s%s\r\n", OptionLabels[i], Suffix);
@@ -175,7 +175,7 @@ EFI_MENU_PAGE *ScreenInfoMenu(VOID)
     ScreenInfoMenuPtr->Update = ScreenInfoMenuUpdate;
 
     CHAR16 tmp[2];
-    IntToStr(tmp, cOut->Mode->Mode + 1);
+    IntToStr(tmp, cOut->Mode->Mode);
     StrCpySafe(ScreenInfoMenuPtr->InputBuffer, tmp);
     return ScreenInfoMenuPtr;
 }
