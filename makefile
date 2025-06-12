@@ -4,8 +4,8 @@ BUILD_DIR := build
 
 SOURCES := $(wildcard $(SRC_DIR)/*.c)
 OBJS    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
-DEPENDS = $(OBJS:.o=.d)
-TARGET  := BOOTX64.EFI
+DEPENDS := $(OBJS:.o=.d)
+TARGET  := $(BUILD_DIR)/BOOTX64.EFI
 
 IMG := OS.img
 TMP_PART = /tmp/part.img
@@ -57,7 +57,7 @@ $(IMG): $(TARGET)
 	mformat -i $(TMP_PART) -h 32 -t 32 -n 64 -c 1
 	mmd -i $(TMP_PART) ::/EFI
 	mmd -i $(TMP_PART) ::/EFI/BOOT
-	mcopy -i $(TMP_PART) $< ::/EFI/BOOT/$(TARGET)
+	mcopy -i $(TMP_PART) $< ::/EFI/BOOT/$(notdir $(TARGET))
 	dd if=$(TMP_PART) of=$@ bs=512 count=91669 seek=2048 conv=notrunc
 
 $(TARGET): $(OBJS)
@@ -72,4 +72,4 @@ $(BUILD_DIR):
 -include $(DEPENDS)
 
 clean:
-	rm -rf *.img *.EFI *.log $(BUILD_DIR)
+	rm -rf *.log $(BUILD_DIR)
