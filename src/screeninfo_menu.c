@@ -51,6 +51,9 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
         // If the mode changed, set it and update the screen
         if (NewMode != PrevMode)
         {
+            // This should ideally be in the update loop, but we cannot handle
+            //  per-menu members at the moment, so it would be hard to track when
+            //  to actually set the mode when updating the screen
             cOut->SetMode(cOut, NewMode);
             IntToStr(This->InputBuffer, NewMode);
             This->RedrawNeeded = TRUE;
