@@ -7,7 +7,7 @@ OBJS    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
 DEPENDS := $(OBJS:.o=.d)
 TARGET  := $(BUILD_DIR)/BOOTX64.EFI
 
-IMG := OS.img
+IMG := $(BUILD_DIR)/OS.img
 TMP_PART = /tmp/part.img
 FIRMWARE_BIN = bios64.bin
 QEMU_LOG = qemu.log
@@ -34,7 +34,7 @@ CFLAGS = \
 	-ffreestanding \
 	-I$(INC_DIR)
 
-.PHONY: all run clean fresh 
+.PHONY: run clean image
 
 run: $(IMG)
 	@echo "Running $<..."
@@ -45,6 +45,8 @@ run: $(IMG)
 		-machine q35 \
 		-net none \
 		--serial file:$(QEMU_LOG)
+
+image: $(IMG)
 
 # Create the image with the EFI application and startup script
 $(IMG): $(TARGET)
