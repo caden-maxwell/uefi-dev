@@ -14,31 +14,31 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
     cOut->ClearScreen(cOut);
 
-    EFI_MENU_PAGE *MenuStates[] = {
+    EFI_MENU_PAGE *Menus[] = {
         [EfiMainMenuState]       = MainMenu(),
         [EfiScreenInfoMenuState] = ScreenInfoMenu(),
         [EfiGOPInfoMenuState]    = GOPInfoMenu()};
 
     // Start main event loop
-    EFI_MENU_PAGE *PrevMenuState = NULL;
-    EFI_MENU_PAGE *CurrentMenuState = MenuStates[EfiMainMenuState];
+    EFI_MENU_PAGE *PrevMenus = NULL;
+    EFI_MENU_PAGE *CurrentMenus = Menus[EfiMainMenuState];
     EFI_INPUT_KEY Key;
     while (TRUE)
     {
         cIn->ReadKeyStroke(cIn, &Key);
-        EFI_MENU_STATE NextMenuState = CurrentMenuState->ProcessInput(CurrentMenuState, &Key);
+        EFI_MENU_STATE NextMenu = CurrentMenus->ProcessInput(CurrentMenus, &Key);
 
-        if (NextMenuState == EfiExitState)
+        if (NextMenu == EfiExitState)
             break;
 
-        CurrentMenuState = MenuStates[NextMenuState];
-        if (CurrentMenuState != PrevMenuState)
-            CurrentMenuState->RedrawNeeded = TRUE;
+        CurrentMenus = Menus[NextMenu];
+        if (CurrentMenus != PrevMenus)
+            CurrentMenus->RedrawNeeded = TRUE;
 
-        CurrentMenuState->Update(CurrentMenuState);
+        CurrentMenus->Update(CurrentMenus);
 
         BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
-        PrevMenuState = CurrentMenuState;
+        PrevMenus = CurrentMenus;
     }
 
     RS->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
