@@ -12,7 +12,8 @@ typedef enum SCAN_CODE
 
 typedef enum UNICODE_CHAR
 {
-    UnicodeCharNewline = 0xD,
+    UnicodeCharNewline   = 0xD,
+    UnicodeCharBackspace = 0x8
 } UNICODE_CHAR;
 
 typedef struct EFI_MENU_PAGE EFI_MENU_PAGE;
