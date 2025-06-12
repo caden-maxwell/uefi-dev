@@ -56,6 +56,13 @@ typedef struct EFI_MENU_PAGE
     INT32 InputLength;
 } EFI_MENU_PAGE;
 
+typedef struct EFI_GOP_INFO_MENU_PAGE
+{
+    EFI_MENU_PAGE Base;
+    UINT16 CurrentMode;
+    BOOLEAN DoSetMode;
+} EFI_GOP_INFO_MENU_PAGE;
+
 EFI_MENU_PAGE *MainMenu(VOID);
 EFI_MENU_PAGE *ScreenInfoMenu(VOID);
 EFI_MENU_PAGE *GOPInfoMenu(VOID);
