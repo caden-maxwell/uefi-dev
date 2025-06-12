@@ -96,12 +96,12 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *Base, EFI_INPUT_KEY *Key)
 
 VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *Base)
 {
+    EFI_GOP_INFO_MENU_PAGE *Self = (EFI_GOP_INFO_MENU_PAGE *)Base;
+
     CHAR16 *OptionLabels[EfiGOPInfoMenuN] = {
         [EfiGOPInfoMenuSetTextMode] = u"Set GOP Mode",
         [EfiGOPInfoMenuBack]        = u"Back to Main Menu",
     };
-
-    EFI_GOP_INFO_MENU_PAGE *Self = (EFI_GOP_INFO_MENU_PAGE *)Base;
 
     if (Self->DoSetMode)
     {
