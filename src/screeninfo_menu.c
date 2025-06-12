@@ -42,7 +42,7 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
             NewMode--;
         // If [Backspace], remove one char from buffer
         else if (Key->UnicodeChar == UnicodeCharBackspace)
-            NewMode /= 10;
+            NewMode = PrevMode/10;
 
         // Clamp values to [0-Max]
         if (NewMode > MaxMode) NewMode = MaxMode;
