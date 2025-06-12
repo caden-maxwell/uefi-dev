@@ -15,33 +15,38 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
     if (This->AwaitingInput)
     {
         // Get the current and max modes
-        INTN PrevMode = cOut->Mode->Mode;
-        INTN NewMode = PrevMode;
-        INTN MaxMode = cOut->Mode->MaxMode - 1;
+        INT16 PrevMode = cOut->Mode->Mode;
+        INT16 NewMode = PrevMode;
+        INT16 MaxMode = cOut->Mode->MaxMode - 1;
+        INT16 NewNum = Key->UnicodeChar - '0';
 
         // If [Enter] or [ESC], stop getting input
         if (Key->UnicodeChar == UnicodeCharNewline || Key->ScanCode == ScanCodeEscape)
         {
-            This->RedrawNeeded = TRUE; // Need to redraw to get rid of suffixes
+            This->RedrawNeeded = TRUE;
             This->AwaitingInput = FALSE;
+        }
+        // If [0-9], add to buffer if resulting num is in range
+        else if (0 <= NewNum && NewNum <= 9)
+        {
+            NewMode = PrevMode*10 + NewNum;
+            // If the new mode is invalid, just reset the buffer to the new char
+            if (NewMode > MaxMode)
+                NewMode = NewNum;
         }
         // If [Down], increment the mode
         else if (Key->ScanCode == ScanCodeArrowDown)
-        {
-            if (++NewMode > MaxMode)
-                NewMode = MaxMode;
-        }
+            NewMode++;
         // If [Up], decrement the mode
         else if (Key->ScanCode == ScanCodeArrowUp)
-        {
-            if (--NewMode < 0)
-                NewMode = 0;
-        }
-        // If [1-MaxMode], switch to mode
-        else if (Key->UnicodeChar >= '0' && Key->UnicodeChar - '0' <= MaxMode)
-        {
-            NewMode = Key->UnicodeChar - '0';
-        }
+            NewMode--;
+        // If [Backspace], remove one char from buffer
+        else if (Key->UnicodeChar == UnicodeCharBackspace)
+            NewMode /= 10;
+
+        // Clamp values to [0-Max]
+        if (NewMode > MaxMode) NewMode = MaxMode;
+        if (NewMode < 0) NewMode = 0;
 
         // If the mode changed, set it and update the screen
         if (NewMode != PrevMode)
@@ -50,10 +55,8 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
             IntToStr(This->InputBuffer, NewMode);
             This->RedrawNeeded = TRUE;
         }
-
-        // Select submenu/perform action
     }
-    else
+    else // Select submenu/perform action
     {
         if (Key->UnicodeChar == UnicodeCharNewline)
         {
@@ -102,7 +105,6 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
     {
         This->RedrawNeeded = FALSE;
         cOut->ClearScreen(cOut);
-        This->DebugInfo.NumDraws++;
 
         UINTN cols = 0;
         UINTN rows = 0;

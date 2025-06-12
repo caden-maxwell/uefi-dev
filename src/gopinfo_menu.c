@@ -15,45 +15,43 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
     if (This->AwaitingInput)
     {
         // Get the current and max modes
-        INTN PrevMode = GOP->Mode->Mode;
-        INTN NewMode = PrevMode;
-        INTN MaxMode = GOP->Mode->MaxMode - 1;
+        INT16 PrevMode = GOP->Mode->Mode;
+        INT16 NewMode = PrevMode;
+        INT16 MaxMode = GOP->Mode->MaxMode - 1;
+        INT16 NewNum = Key->UnicodeChar - '0';
 
         // If [Enter] or [ESC], stop getting input
         if (Key->UnicodeChar == UnicodeCharNewline || Key->ScanCode == ScanCodeEscape)
         {
-            This->RedrawNeeded = TRUE; // Need to redraw to get rid of suffixes
+            This->RedrawNeeded = TRUE;
             This->AwaitingInput = FALSE;
+        }
+        // If [0-9], add to buffer if resulting num is in range
+        else if (0 <= NewNum && NewNum <= 9)
+        {
+            NewMode = PrevMode*10 + NewNum;
+            // If the new mode is invalid, just reset the buffer to the new char
+            if (NewMode > MaxMode)
+                NewMode = NewNum;
         }
         // If [Down], increment the mode
         else if (Key->ScanCode == ScanCodeArrowDown)
-        {
-            if (++NewMode > MaxMode)
-                NewMode = MaxMode;
-        }
+            NewMode++;
         // If [Up], decrement the mode
         else if (Key->ScanCode == ScanCodeArrowUp)
-        {
-            if (--NewMode < 0)
-                NewMode = 0;
-        }
-        // If [1-MaxMode], switch to mode
-        // TODO: Can only handle a single char in the buffer. Need to handle 2+
-        //  With my current device, there are 30 GOP modes
-        else if (Key->UnicodeChar >= '0' && Key->UnicodeChar - '0' <= MaxMode)
-        {
-            NewMode = Key->UnicodeChar - '0';
-        }
+            NewMode--;
+        // If [Backspace], remove one char from buffer
+        else if (Key->UnicodeChar == UnicodeCharBackspace)
+            NewMode /= 10;
+
+        // Clamp values to [0-Max]
+        if (NewMode > MaxMode) NewMode = MaxMode;
+        if (NewMode < 0) NewMode = 0;
 
         // If the mode changed, set it and update the screen
         if (NewMode != PrevMode)
         {
-            Status = GOP->SetMode(GOP, NewMode);
-            if (Status == EFI_UNSUPPORTED || Status == EFI_DEVICE_ERROR)
-            {
-                NewMode = PrevMode;
-                GOP->SetMode(GOP, NewMode);
-            }
+            GOP->SetMode(GOP, NewMode);
             IntToStr(This->InputBuffer, NewMode);
             This->RedrawNeeded = TRUE;
         }
@@ -107,7 +105,6 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *This)
     {
         This->RedrawNeeded = FALSE;
         cOut->ClearScreen(cOut);
-        This->DebugInfo.NumDraws++;
 
         UINTN InfoSize;
         EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *GOPInfo;
