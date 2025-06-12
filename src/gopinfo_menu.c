@@ -30,7 +30,7 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
         else if (0 <= NewNum && NewNum <= 9)
         {
             NewMode = PrevMode*10 + NewNum;
-            // If the new mode is invalid, just reset the buffer to the new char
+            // If resulting mode is invalid, just reset the buffer to the new char
             if (NewMode > MaxMode)
                 NewMode = NewNum;
         }
