@@ -119,12 +119,10 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *Base)
             u"===== Screen Info =====\r\n\n"
             u"Current Mode: %d\r\n\n"
             u"MaxMode: %d\r\n"
-            u"CursorVisible: %d\r\n"
             u"Columns: %d\r\n"
             u"Rows: %d\r\n\n",
             cOut->Mode->Mode,
             cOut->Mode->MaxMode,
-            cOut->Mode->CursorVisible,
             cols, rows);
 
         CHAR16 Suffix[16];
