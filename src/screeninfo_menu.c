@@ -117,27 +117,17 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *Base)
         cOut->QueryMode(cOut, cOut->Mode->Mode, &cols, &rows);
         Printf(
             u"===== Screen Info =====\r\n\n"
-            u"Current Mode: %d\r\n\n"
-            u"MaxMode: %d\r\n"
+            u"Current Mode: %d\r\n"
             u"Columns: %d\r\n"
-            u"Rows: %d\r\n\n",
+            u"Rows: %d\r\n"
+            u"MaxMode: %d\r\n\n",
             cOut->Mode->Mode,
-            cOut->Mode->MaxMode,
-            cols, rows);
-
-        CHAR16 Suffix[16];
-        for (INT32 i = 0; i < cOut->Mode->MaxMode; i++)
-        {
-            Suffix[0] = '\0'; // Reset String to null
-            if (i == cOut->Mode->Mode)
-                StrCpySafe(Suffix, u" (selected)");
-
-            cOut->QueryMode(cOut, i, &cols, &rows);
-            Printf(u"Mode %d: %d x %d%s\r\n", i, cols, rows, Suffix);
-        }
-        Printf(u"\n");
+            cols, rows,
+            cOut->Mode->MaxMode
+        );
         TopSelectableRow = cOut->Mode->CursorRow;
 
+        CHAR16 Suffix[16];
         for (INT32 i = 0; i < EfiScreenInfoMenuN; i++)
         {
             cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
