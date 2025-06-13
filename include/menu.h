@@ -52,16 +52,14 @@ typedef struct EFI_MENU_PAGE
     EFI_MENU_DEBUG_INFO DebugInfo;
     EFI_MENU_PROCESS_INPUT ProcessInput;
     EFI_MENU_UPDATE Update;
-    CHAR16 InputBuffer[128];
-    INT32 InputLength;
 } EFI_MENU_PAGE;
 
-typedef struct EFI_GOP_INFO_MENU_PAGE
+typedef struct EFI_INFO_PAGE
 {
     EFI_MENU_PAGE Base;
     UINT16 CurrentMode;
     BOOLEAN DoSetMode;
-} EFI_GOP_INFO_MENU_PAGE;
+} EFI_INFO_PAGE;
 
 EFI_MENU_PAGE *MainMenu(VOID);
 EFI_MENU_PAGE *ScreenInfoMenu(VOID);

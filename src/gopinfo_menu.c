@@ -9,7 +9,7 @@ typedef enum EFI_GOP_INFO_MENU_OPTIONS
 
 EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *Base, EFI_INPUT_KEY *Key)
 {
-    EFI_GOP_INFO_MENU_PAGE *Self = (EFI_GOP_INFO_MENU_PAGE *)Base;
+    EFI_INFO_PAGE *Self = (EFI_INFO_PAGE *)Base;
     // Printf(u"KEY: %c, SCANCODE: 0x%x\r\n", Key->UnicodeChar, Key->ScanCode); // For debugging
 
     // Entering mode number
@@ -48,14 +48,11 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *Base, EFI_INPUT_KEY *Key)
         // Clamp values to [0-Max]
         if (NewMode > MaxMode) NewMode = MaxMode;
         if (NewMode < 0) NewMode = 0;
+        Self->CurrentMode = NewMode;
 
-        // If the mode changed, set it and update the screen
+        // If the mode changed, trigger screen update
         if (NewMode != PrevMode)
-        {
-            Self->CurrentMode = NewMode;
-            Base->RedrawNeeded = TRUE;
             Self->DoSetMode = TRUE;
-        }
     }
     else // Select submenu/perform action
     {
@@ -96,7 +93,7 @@ EFI_MENU_STATE GOPInfoMenuProcessInput(EFI_MENU_PAGE *Base, EFI_INPUT_KEY *Key)
 
 VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *Base)
 {
-    EFI_GOP_INFO_MENU_PAGE *Self = (EFI_GOP_INFO_MENU_PAGE *)Base;
+    EFI_INFO_PAGE *Self = (EFI_INFO_PAGE *)Base;
 
     CHAR16 *OptionLabels[EfiGOPInfoMenuN] = {
         [EfiGOPInfoMenuSetTextMode] = u"Set GOP Mode",
@@ -105,9 +102,9 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *Base)
 
     if (Self->DoSetMode)
     {
-        Self->DoSetMode = FALSE;
-        IntToStr(Base->InputBuffer, Self->CurrentMode);
         GOP->SetMode(GOP, Self->CurrentMode);
+        Self->DoSetMode = FALSE;
+        Base->RedrawNeeded = TRUE;
     }
 
     INT32 TopSelectableRow = cOut->Mode->CursorRow;
@@ -121,18 +118,13 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *Base)
         GOP->QueryMode(GOP, GOP->Mode->Mode, &InfoSize, &GOPInfo);
         Printf(
             u"===== GOP Info =====\r\n\n"
-            u"Current Mode: %d\r\n\n"
-            u"MaxMode: %d\r\n"
+            u"Current Mode: %d\r\n"
             u"Resolution: %dx%d\r\n"
-            u"BGRR: %x %x %x %x\r\n\n",
+            u"MaxMode: %d\r\n\n",
             GOP->Mode->Mode,
-            GOP->Mode->MaxMode,
             GOPInfo->HorizontalResolution,
             GOPInfo->VerticalResolution,
-            GOPInfo->PixelInformation.BlueMask,
-            GOPInfo->PixelInformation.GreenMask,
-            GOPInfo->PixelInformation.RedMask,
-            GOPInfo->PixelInformation.ReservedMask
+            GOP->Mode->MaxMode
         );
         TopSelectableRow = cOut->Mode->CursorRow;
 
@@ -145,7 +137,7 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *Base)
             {
                 cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
                 if (Base->AwaitingInput)
-                    sPrintfSafe(Suffix, u" (0-%d): %s", GOP->Mode->MaxMode-1, Base->InputBuffer);
+                    sPrintfSafe(Suffix, u" (0-%d): %d", GOP->Mode->MaxMode-1, GOP->Mode->Mode);
             }
 
             Printf(u"%s%s\r\n", OptionLabels[i], Suffix);
@@ -169,14 +161,16 @@ VOID GOPInfoMenuUpdate(EFI_MENU_PAGE *Base)
 // Initialize GOPInfoMenu Page
 EFI_MENU_PAGE *GOPInfoMenu(VOID)
 {
-    EFI_GOP_INFO_MENU_PAGE *GOPInfoMenuPtr;
-    BS->AllocatePool(EfiLoaderData, sizeof(EFI_GOP_INFO_MENU_PAGE), (VOID **)&GOPInfoMenuPtr);
+    // Allocate space for the GOP info menu
+    EFI_INFO_PAGE *GOPInfoMenuPtr;
+    BS->AllocatePool(EfiLoaderData, sizeof(EFI_INFO_PAGE), (VOID **)&GOPInfoMenuPtr);
+
+    // Set defaults
     GOPInfoMenuPtr->Base = DefaultPage;
     GOPInfoMenuPtr->Base.ProcessInput = GOPInfoMenuProcessInput;
     GOPInfoMenuPtr->Base.Update = GOPInfoMenuUpdate;
+    GOPInfoMenuPtr->CurrentMode = GOP->Mode->Mode;
+    GOPInfoMenuPtr->DoSetMode = FALSE;
 
-    CHAR16 tmp[3];
-    IntToStr(tmp, GOP->Mode->Mode);
-    StrCpySafe(GOPInfoMenuPtr->Base.InputBuffer, tmp);
     return (EFI_MENU_PAGE *)GOPInfoMenuPtr;
 }

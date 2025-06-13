@@ -7,6 +7,4 @@ const EFI_MENU_PAGE DefaultPage = {
     .ProcessInput = NULL,
     .Update = NULL,
     .AwaitingInput = FALSE,
-    .InputBuffer = u"",
-    .InputLength = 0,
 };

@@ -7,12 +7,13 @@ typedef enum EFI_SCREEN_INFO_MENU_OPTIONS
     EfiScreenInfoMenuN
 } EFI_SCREEN_INFO_MENU_OPTIONS;
 
-EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
+EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *Base, EFI_INPUT_KEY *Key)
 {
+    EFI_INFO_PAGE *Self = (EFI_INFO_PAGE *)Base;
     // Printf(u"KEY: %c, SCANCODE: 0x%x\r\n", Key->UnicodeChar, Key->ScanCode); // For debugging
 
     // Entering mode number
-    if (This->AwaitingInput)
+    if (Base->AwaitingInput)
     {
         // Get the current and max modes
         INT16 PrevMode = cOut->Mode->Mode;
@@ -23,8 +24,8 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
         // If [Enter] or [ESC], stop getting input
         if (Key->UnicodeChar == UnicodeCharNewline || Key->ScanCode == ScanCodeEscape)
         {
-            This->RedrawNeeded = TRUE;
-            This->AwaitingInput = FALSE;
+            Base->RedrawNeeded = TRUE;
+            Base->AwaitingInput = FALSE;
         }
         // If [0-9], add to buffer if resulting num is in range
         else if (0 <= NewNum && NewNum <= 9)
@@ -47,28 +48,22 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
         // Clamp values to [0-Max]
         if (NewMode > MaxMode) NewMode = MaxMode;
         if (NewMode < 0) NewMode = 0;
+        Self->CurrentMode = NewMode;
 
-        // If the mode changed, set it and update the screen
+        // If the mode changed, trigger screen update
         if (NewMode != PrevMode)
-        {
-            // This should ideally be in the update loop, but we cannot handle
-            //  per-menu members at the moment, so it would be hard to track when
-            //  to actually set the mode when updating the screen
-            cOut->SetMode(cOut, NewMode);
-            IntToStr(This->InputBuffer, NewMode);
-            This->RedrawNeeded = TRUE;
-        }
+            Self->DoSetMode = TRUE;
     }
     else // Select submenu/perform action
     {
         if (Key->UnicodeChar == UnicodeCharNewline)
         {
-            switch (This->CurrentOption)
+            switch (Base->CurrentOption)
             {
             case EfiScreenInfoMenuSetTextMode:
             {
-                This->AwaitingInput = TRUE;
-                This->RedrawNeeded = TRUE;
+                Base->AwaitingInput = TRUE;
+                Base->RedrawNeeded = TRUE;
                 break;
             }
             case EfiScreenInfoMenuBack:
@@ -78,35 +73,43 @@ EFI_MENU_STATE ScreenInfoMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Ke
         else if (Key->ScanCode == ScanCodeEscape)
             return EfiMainMenuState;
 
-        This->PrevOption = This->CurrentOption;
+        Base->PrevOption = Base->CurrentOption;
 
         // Move selection
         if (Key->ScanCode == ScanCodeArrowDown)
-            This->CurrentOption++;
+            Base->CurrentOption++;
         else if (Key->ScanCode == ScanCodeArrowUp)
-            This->CurrentOption--;
+            Base->CurrentOption--;
 
         // Check current selection bounds
-        if (This->CurrentOption < 0)
-            This->CurrentOption = 0;
-        else if (This->CurrentOption > EfiScreenInfoMenuN - 1)
-            This->CurrentOption = EfiScreenInfoMenuN - 1;
+        if (Base->CurrentOption < 0)
+            Base->CurrentOption = 0;
+        else if (Base->CurrentOption > EfiScreenInfoMenuN - 1)
+            Base->CurrentOption = EfiScreenInfoMenuN - 1;
     }
 
     return EfiScreenInfoMenuState;
 }
 
-VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
+VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *Base)
 {
+    EFI_INFO_PAGE *Self = (EFI_INFO_PAGE *)Base;
     CHAR16 *OptionLabels[EfiScreenInfoMenuN] = {
         [EfiScreenInfoMenuSetTextMode] = u"Set Text Mode",
         [EfiScreenInfoMenuBack]        = u"Back to Main Menu",
     };
 
-    INT32 TopSelectableRow = cOut->Mode->CursorRow;
-    if (This->RedrawNeeded)
+    if (Self->DoSetMode)
     {
-        This->RedrawNeeded = FALSE;
+        cOut->SetMode(cOut, Self->CurrentMode);
+        Self->DoSetMode = FALSE;
+        Base->RedrawNeeded = TRUE;
+    }
+
+    INT32 TopSelectableRow = cOut->Mode->CursorRow;
+    if (Base->RedrawNeeded)
+    {
+        Base->RedrawNeeded = FALSE;
         cOut->ClearScreen(cOut);
 
         UINTN cols = 0;
@@ -116,15 +119,11 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
             u"===== Screen Info =====\r\n\n"
             u"Current Mode: %d\r\n\n"
             u"MaxMode: %d\r\n"
-            u"CursorRow: %d\r\n"
-            u"CursorColumn: %d\r\n"
             u"CursorVisible: %d\r\n"
             u"Columns: %d\r\n"
             u"Rows: %d\r\n\n",
             cOut->Mode->Mode,
             cOut->Mode->MaxMode,
-            cOut->Mode->CursorRow,
-            cOut->Mode->CursorColumn,
             cOut->Mode->CursorVisible,
             cols, rows);
 
@@ -145,11 +144,11 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
         {
             cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
             Suffix[0] = '\0'; // Reset String to null
-            if (i == This->CurrentOption)
+            if (i == Base->CurrentOption)
             {
                 cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
-                if (This->AwaitingInput)
-                    sPrintfSafe(Suffix, u" (0-%d): %s", cOut->Mode->MaxMode - 1, This->InputBuffer);
+                if (Base->AwaitingInput)
+                    sPrintfSafe(Suffix, u" (0-%d): %d", cOut->Mode->MaxMode - 1, cOut->Mode->Mode);
             }
 
             Printf(u"%s%s\r\n", OptionLabels[i], Suffix);
@@ -160,12 +159,12 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
         return;
     }
 
-    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->PrevOption);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + Base->PrevOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
-    Printf(u"%s\r", OptionLabels[This->PrevOption]);
-    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + This->CurrentOption);
+    Printf(u"%s\r", OptionLabels[Base->PrevOption]);
+    cOut->SetCursorPosition(cOut, 0, TopSelectableRow + Base->CurrentOption);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_LIGHTGRAY, EFI_BLUE));
-    Printf(u"%s\r", OptionLabels[This->CurrentOption]);
+    Printf(u"%s\r", OptionLabels[Base->CurrentOption]);
     cOut->SetCursorPosition(cOut, 0, TopSelectableRow);
     cOut->SetAttribute(cOut, EFI_TEXT_ATTR(EFI_BLUE, EFI_LIGHTGRAY));
 }
@@ -173,14 +172,16 @@ VOID ScreenInfoMenuUpdate(EFI_MENU_PAGE *This)
 // Initialize ScreenInfoMenu Page
 EFI_MENU_PAGE *ScreenInfoMenu(VOID)
 {
-    EFI_MENU_PAGE *ScreenInfoMenuPtr;
-    BS->AllocatePool(EfiLoaderData, sizeof(EFI_MENU_PAGE), (VOID **)&ScreenInfoMenuPtr);
-    *ScreenInfoMenuPtr = DefaultPage;
-    ScreenInfoMenuPtr->ProcessInput = ScreenInfoMenuProcessInput;
-    ScreenInfoMenuPtr->Update = ScreenInfoMenuUpdate;
+    // Allocate space for the screen info page
+    EFI_INFO_PAGE *ScreenInfoMenuPtr;
+    BS->AllocatePool(EfiLoaderData, sizeof(EFI_INFO_PAGE), (VOID **)&ScreenInfoMenuPtr);
 
-    CHAR16 tmp[2];
-    IntToStr(tmp, cOut->Mode->Mode);
-    StrCpySafe(ScreenInfoMenuPtr->InputBuffer, tmp);
-    return ScreenInfoMenuPtr;
+    // Set up defaults
+    ScreenInfoMenuPtr->Base = DefaultPage;
+    ScreenInfoMenuPtr->Base.ProcessInput = ScreenInfoMenuProcessInput;
+    ScreenInfoMenuPtr->Base.Update = ScreenInfoMenuUpdate;
+    ScreenInfoMenuPtr->CurrentMode = cOut->Mode->Mode;
+    ScreenInfoMenuPtr->DoSetMode = FALSE;
+
+    return (EFI_MENU_PAGE *)ScreenInfoMenuPtr;
 }

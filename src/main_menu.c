@@ -90,10 +90,14 @@ VOID MainMenuUpdate(EFI_MENU_PAGE *This)
 // Initialize MainMenu Page
 EFI_MENU_PAGE *MainMenu(VOID)
 {
+    // Allocate space for the main menu page
     EFI_MENU_PAGE *MainMenuPtr;
     BS->AllocatePool(EfiLoaderData, sizeof(EFI_MENU_PAGE), (VOID **)&MainMenuPtr);
+
+    // Set up defaults
     *MainMenuPtr = DefaultPage;
     MainMenuPtr->ProcessInput = MainMenuProcessInput;
     MainMenuPtr->Update = MainMenuUpdate;
+
     return MainMenuPtr;
 }
