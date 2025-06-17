@@ -1,5 +1,4 @@
 #include "menu.h"
-#include "kernelstart.h"
 
 EFI_STATUS KernelStart(VOID)
 {
