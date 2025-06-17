@@ -21,6 +21,8 @@ EFI_MENU_STATE MainMenuProcessInput(EFI_MENU_PAGE *This, EFI_INPUT_KEY *Key)
             return EfiScreenInfoMenuState;
         case EfiMainMenuGOPInfoMenu:
             return EfiGOPInfoMenuState;
+        case EfiMainMenuKernelStart:
+            return EfiKernelStartState;
         case EfiMainMenuExit:
             return EfiExitState;
         }

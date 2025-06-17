@@ -16,8 +16,6 @@ typedef enum UNICODE_CHAR
     UnicodeCharBackspace = 0x8
 } UNICODE_CHAR;
 
-typedef struct EFI_MENU_PAGE EFI_MENU_PAGE;
-
 typedef enum EFI_MENU_STATE
 {
     EfiMainMenuState,
@@ -27,9 +25,9 @@ typedef enum EFI_MENU_STATE
     EfiExitState
 } EFI_MENU_STATE;
 
-extern const EFI_MENU_PAGE DefaultPage;
+typedef struct EFI_MENU_PAGE EFI_MENU_PAGE;
 
-// ===== Generic Menu functions =====
+extern const EFI_MENU_PAGE DefaultPage;
 
 typedef EFI_MENU_STATE (*EFI_MENU_PROCESS_INPUT)(
     IN EFI_MENU_PAGE *This,
@@ -64,5 +62,6 @@ typedef struct EFI_INFO_PAGE
 EFI_MENU_PAGE *MainMenu(VOID);
 EFI_MENU_PAGE *ScreenInfoMenu(VOID);
 EFI_MENU_PAGE *GOPInfoMenu(VOID);
+EFI_MENU_PAGE *KernelStartMenu(VOID);
 
 #endif // _MENU_H

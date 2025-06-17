@@ -17,7 +17,9 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     EFI_MENU_PAGE *Menus[] = {
         [EfiMainMenuState]       = MainMenu(),
         [EfiScreenInfoMenuState] = ScreenInfoMenu(),
-        [EfiGOPInfoMenuState]    = GOPInfoMenu()};
+        [EfiGOPInfoMenuState]    = GOPInfoMenu(),
+        [EfiKernelStartState]    = KernelStartMenu()
+    };
 
     // Start main event loop
     EFI_MENU_PAGE *PrevMenus = NULL;
@@ -41,10 +43,11 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         PrevMenus = CurrentMenus;
     }
 
-    for (INT32 i=0; i < ARRAY_LEN(Menus); i++)
+    for (UINT32 i=0; i < ARRAY_LEN(Menus); i++)
         BS->FreePool(Menus[i]);
 
     RS->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
 
+    // Should not get here
     return EFI_SUCCESS;
 }
