@@ -39,6 +39,9 @@ typedef UINT8  EFI_IPv4_ADDRESS[4];
 typedef UINT8  EFI_IPv6_ADDRESS[16];
 typedef UINT8  ALIGNED4 EFI_IP_ADDRESS[16];
 
+typedef UINT64 EFI_PHYSICAL_ADDRESS;
+typedef UINT64 EFI_VIRTUAL_ADDRESS;
+
 // UEFI Spec. Appendix A
 typedef struct EFI_GUID {
     UINT32 TimeLow;
@@ -366,8 +369,6 @@ EFI_STATUS
     IN UINTN                             Delta OPTIONAL
 );
 
-typedef UINT64 EFI_PHYSICAL_ADDRESS;
-
 // Uefi Spec 12.9.2
 typedef struct {
     UINT32                               MaxMode;
@@ -626,6 +627,34 @@ EFI_STATUS
     IN OUT EFI_PHYSICAL_ADDRESS *Memory
 );
 
+// UEFI Spec 7.2.2
+typedef
+EFI_STATUS
+(EFIAPI *EFI_FREE_PAGES) (
+    IN EFI_PHYSICAL_ADDRESS Memory,
+    IN UINTN                Pages
+);
+
+// UEFI Spec 7.2.3
+typedef struct {
+   UINT32               Type;
+   EFI_PHYSICAL_ADDRESS PhysicalStart;
+   EFI_VIRTUAL_ADDRESS  VirtualStart;
+   UINT64               NumberOfPages;
+   UINT64               Attribute;
+  } EFI_MEMORY_DESCRIPTOR;
+
+// UEFI Spec 7.2.3
+typedef
+EFI_STATUS
+(EFIAPI *EFI_GET_MEMORY_MAP) (
+    IN OUT UINTN              *MemoryMapSize,
+    OUT EFI_MEMORY_DESCRIPTOR *MemoryMap,
+    OUT UINTN                 *MapKey,
+    OUT UINTN                 *DescriptorSize,
+    OUT UINT32                *DescriptorVersion
+);
+
 // UEFI Spec 7.2.4
 typedef
 EFI_STATUS
@@ -634,6 +663,14 @@ EFI_STATUS
     IN UINTN           Size,
     OUT VOID           **Buffer
 );
+
+// UEFI Spec 7.2.5
+typedef
+EFI_STATUS
+(EFIAPI *EFI_FREE_POOL) (
+    IN VOID *Buffer
+);
+
 
 // UEFI Spec 7.5.1
 typedef
@@ -674,14 +711,11 @@ typedef struct EFI_BOOT_SERVICES{
     //
     // Memory Services
     //
-    // EFI_FREE_PAGES       FreePages;      // EFI 1.0+
-    // EFI_GET_MEMORY_MAP   GetMemoryMap;   // EFI 1.0+
-    // EFI_FREE_POOL        FreePool;       // EFI 1.0+
     EFI_ALLOCATE_PAGES   AllocatePages;  // EFI 1.0+
-    void *FreePages;      // EFI 1.0+
-    void *GetMemoryMap;   // EFI 1.0+
+    EFI_FREE_PAGES       FreePages;      // EFI 1.0+
+    EFI_GET_MEMORY_MAP   GetMemoryMap;   // EFI 1.0+
     EFI_ALLOCATE_POOL    AllocatePool;   // EFI 1.0+
-    void *FreePool;       // EFI 1.0+
+    EFI_FREE_POOL        FreePool;       // EFI 1.0+
 
     //
     // Event & Timer Services
