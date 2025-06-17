@@ -41,6 +41,9 @@ EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         PrevMenus = CurrentMenus;
     }
 
+    for (INT32 i=0; i < ARRAY_LEN(Menus); i++)
+        BS->FreePool(Menus[i]);
+
     RS->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
 
     return EFI_SUCCESS;
