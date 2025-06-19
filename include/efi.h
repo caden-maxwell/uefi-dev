@@ -671,6 +671,13 @@ EFI_STATUS
     IN VOID *Buffer
 );
 
+// UEFI Spec 7.4.6
+typedef
+EFI_STATUS
+(EFIAPI *EFI_EXIT_BOOT_SERVICES) (
+    IN EFI_HANDLE ImageHandle,
+    IN UINTN      MapKey
+);
 
 // UEFI Spec 7.5.1
 typedef
@@ -756,12 +763,11 @@ typedef struct EFI_BOOT_SERVICES{
     // EFI_IMAGE_START                StartImage;       // EFI 1.0+
     // EFI_EXIT                       Exit;             // EFI 1.0+
     // EFI_IMAGE_UNLOAD               UnloadImage;      // EFI 1.0+
-    // EFI_EXIT_BOOT_SERVICES         ExitBootServices; // EFI 1.0+
     void *LoadImage;        // EFI 1.0+
     void *StartImage;       // EFI 1.0+
     void *Exit;             // EFI 1.0+
     void *UnloadImage;      // EFI 1.0+
-    void *ExitBootServices; // EFI 1.0+
+    EFI_EXIT_BOOT_SERVICES ExitBootServices; // EFI 1.0+
 
     //
     // Miscellaneous Services
@@ -823,7 +829,10 @@ typedef struct EFI_BOOT_SERVICES{
 // ------ EFI_CONFIGURATION_TABLE ------
 // -------------------------------------
 
-typedef struct EFI_CONFIGURATION_TABLE EFI_CONFIGURATION_TABLE;
+typedef struct {
+    EFI_GUID VendorGuid;
+    VOID     *VendorTable;
+} EFI_CONFIGURATION_TABLE;
 
 // ------------------------------
 // ------ EFI_SYSTEM_TABLE ------

@@ -3,9 +3,7 @@
 
 EFI_STATUS UefiEntry(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
-    (void)ImageHandle; // Unused for now
-
-    InitGlobalVars(SystemTable);
+    InitGlobalVars(ImageHandle, SystemTable);
 
     // Clear screen, set cursor position to (0,0), etc...
     cOut->Reset(cOut, FALSE);

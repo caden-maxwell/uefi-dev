@@ -57,6 +57,11 @@ EFI_STATUS KernelStart(VOID)
         BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
         cIn->ReadKeyStroke(cIn, NULL);
     }
+
+    Status = BS->GetMemoryMap(&MemMapSize, MemMapPtr, &MapKey, &DescSize, &DescVersion);
+    Printf(u"Exiting boot services...");
+    BS->ExitBootServices(Image, MapKey);
+
     return EFI_SUCCESS;
 }
 

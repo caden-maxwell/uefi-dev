@@ -1,6 +1,7 @@
 #include "efilib.h"
 #include <stdarg.h>
 
+EFI_HANDLE Image;
 EFI_SYSTEM_TABLE *ST;
 EFI_BOOT_SERVICES *BS;
 EFI_RUNTIME_SERVICES *RS;
@@ -9,8 +10,9 @@ EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
 EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 EFI_STATUS Status;
 
-VOID InitGlobalVars(IN EFI_SYSTEM_TABLE *SystemTable)
+VOID InitGlobalVars(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
+    Image = ImageHandle;
     ST = SystemTable;
     BS = ST->BootServices;
     RS = ST->RuntimeServices;
