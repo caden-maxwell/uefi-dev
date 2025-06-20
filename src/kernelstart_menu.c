@@ -55,12 +55,99 @@ EFI_STATUS KernelStart(VOID)
             Desc->Attribute
         );
         BS->WaitForEvent(1, &cIn->WaitForKey, NULL);
-        cIn->ReadKeyStroke(cIn, NULL);
+        
+        EFI_INPUT_KEY Key;
+        cIn->ReadKeyStroke(cIn, &Key);
+
+        if (Key.ScanCode == ScanCodeEscape)
+            break;
     }
 
-    Status = BS->GetMemoryMap(&MemMapSize, MemMapPtr, &MapKey, &DescSize, &DescVersion);
-    Printf(u"Exiting boot services...");
-    BS->ExitBootServices(Image, MapKey);
+    EFI_GUID LoadedImageGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
+    EFI_LOADED_IMAGE_PROTOCOL *LoadedImage = NULL;
+    Status = BS->OpenProtocol(
+        Image,
+		&LoadedImageGuid,
+		(VOID **)&LoadedImage,
+		Image,
+		NULL,
+		EFI_OPEN_PROTOCOL_GET_PROTOCOL
+    );
+    if (EFI_ERROR(Status)) return Status;
+
+    EFI_GUID FileSystemGuid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
+    Status = BS->OpenProtocol(
+        LoadedImage->DeviceHandle,
+        &FileSystemGuid,
+        (VOID **)&FileSystem,
+        Image,
+        NULL,
+        EFI_OPEN_PROTOCOL_GET_PROTOCOL
+    );
+    if (EFI_ERROR(Status)) return Status;
+
+    EFI_FILE_PROTOCOL *RootDir;
+    Status = FileSystem->OpenVolume(FileSystem, &RootDir);
+    if (EFI_ERROR(Status))
+    {
+        Printf(u"Failed to open volume: ERROR CODE 0x%x\r\n", Status);
+        return Status;
+    }
+
+    UINTN BufSize = 1024;
+    CHAR16 *TmpBuf;
+    Status = RootDir->Read(RootDir, &BufSize, (VOID *)TmpBuf);
+    if (EFI_ERROR(Status))
+    {
+        Printf(u"Failed to read root: ERROR CODE 0x%x\r\n", Status);
+        return Status;
+    }
+    EFI_FILE_INFO *Info = (EFI_FILE_INFO *)TmpBuf;
+    Printf(
+        u"Attribute: 0x%x\r\n"
+        u"CreateTime: %d\r\n"
+        u"FileName: %s\r\n"
+        u"FileSize: %d\r\n"
+        u"LastAccessTime: %d\r\n"
+        u"ModificationTime: %d\r\n"
+        u"PhysicalSize: %d\r\n"
+        u"Size: %d\r\n\n",
+        Info->Attribute,
+        Info->CreateTime,
+        Info->FileName,
+        Info->FileSize,
+        Info->LastAccessTime,
+        Info->ModificationTime,
+        Info->PhysicalSize,
+        Info->Size
+    );
+
+    EFI_FILE_PROTOCOL *NewFile = NULL;
+    CHAR16 *path = u"NEWFILE";
+    Status = RootDir->Open(
+        RootDir,
+		&NewFile,
+		path,
+		EFI_FILE_MODE_CREATE | EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
+		NULL
+    );
+    if (EFI_ERROR(Status))
+    {
+        Printf(u"Failed to create new file: ERROR CODE 0x%x\r\n", Status);
+        return Status;
+    }
+
+    BufSize = 1024;
+    Status = NewFile->Write(NewFile, &BufSize, (VOID *)u"HELLO, WORLD!");
+    if (EFI_ERROR(Status))
+    {
+        Printf(u"Failed to write to new file: ERROR CODE 0x%x\r\n", Status);
+        return Status;
+    }
+
+    NewFile->Flush(NewFile);
+    NewFile->Close(NewFile);
 
     return EFI_SUCCESS;
 }
