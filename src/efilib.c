@@ -7,6 +7,7 @@ EFI_BOOT_SERVICES *BS;
 EFI_RUNTIME_SERVICES *RS;
 EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn;
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
+EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cErr;
 EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 EFI_STATUS Status;
 
@@ -18,6 +19,7 @@ VOID InitGlobalVars(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
     RS = ST->RuntimeServices;
     cIn = ST->ConIn;
     cOut = ST->ConOut;
+    cErr = ST->StdErr;
     EFI_GUID GOPGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     BS->LocateProtocol(&GOPGuid, NULL, (VOID **)&GOP);
 }
@@ -195,6 +197,20 @@ VOID Printf(IN CHAR16 *fstr, ...)
     va_list args;
     va_start(args, fstr);
     vPrintf(fstr, args);
+}
+
+VOID vPrintfErr(IN CHAR16 *fstr, IN va_list args)
+{
+    CHAR16 buffer[1024];
+    FormatString(buffer, fstr, args);
+    cOut->OutputString(cErr, buffer);
+}
+
+VOID PrintfErr(IN CHAR16 *fstr, ...)
+{
+    va_list args;
+    va_start(args, fstr);
+    vPrintfErr(fstr, args);
 }
 
 UINTN StrlCpy(OUT CHAR16 *dest, IN const CHAR16 *source, IN UINTN size)

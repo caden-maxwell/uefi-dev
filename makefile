@@ -45,7 +45,7 @@ run: $(IMG)
 		-m 256M \
 		-machine q35 \
 		-net none \
-		--serial file:$(QEMU_LOG)
+		-serial file:$(QEMU_LOG)
 
 image: $(IMG)
 

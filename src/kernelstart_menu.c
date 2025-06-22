@@ -138,7 +138,7 @@ EFI_STATUS KernelStart(VOID)
         Status = BS->AllocatePool(EfiLoaderData, BufSize, (VOID **)&FileInfo);
         if (EFI_ERROR(Status))
         {
-            Printf(u"Could not allocate memory for FileInfo!\r\n");
+            PrintfErr(u"Could not allocate memory for FileInfo!\r\n");
             break;
         }
 
@@ -150,7 +150,7 @@ EFI_STATUS KernelStart(VOID)
             Status = RootDir->Open(RootDir, &File, FileInfo->FileName, EFI_FILE_MODE_READ, NULL);
             if (EFI_ERROR(Status))
             {
-                Printf(u"Failed to open file '%s': ERROR CODE 0x%x\r\n", FileInfo->FileName, Status);
+                PrintfErr(u"Failed to open file '%s': ERROR CODE 0x%x\r\n", FileInfo->FileName, Status);
                 continue;
             }
 
@@ -171,7 +171,10 @@ EFI_STATUS KernelStart(VOID)
             FileInfo->Attribute &= ~EFI_FILE_ARCHIVE;
             Status = File->SetInfo(File, &FileInfoGuid, BufSize, FileInfo);
             if (EFI_ERROR(Status))
-               continue;
+            {
+                PrintfErr(u"Failed to set archive bit for file '%s': ERROR CODE 0x%x\r\n", FileInfo->FileName, Status);
+                continue;
+            }
 
             File->Flush(File);
             File->Close(File);

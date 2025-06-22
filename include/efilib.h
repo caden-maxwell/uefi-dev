@@ -19,12 +19,14 @@ extern EFI_BOOT_SERVICES *BS;
 extern EFI_RUNTIME_SERVICES *RS;
 extern EFI_SIMPLE_TEXT_INPUT_PROTOCOL *cIn;
 extern EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cOut;
+extern EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *cErr;
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 extern EFI_STATUS Status;
 
 // Functions
 VOID InitGlobalVars(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable);
 VOID Printf(IN CHAR16 *fstr, ...);
+VOID PrintfErr(IN CHAR16 *fstr, ...);
 VOID snPrintf(OUT CHAR16 *dest, IN UINTN destsize, IN CHAR16 *fstr, ...);
 VOID PutChar(IN CHAR16 ch);
 UINTN StrlCpy(OUT CHAR16 *dest, IN const CHAR16 *source, IN UINTN size);
