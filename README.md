@@ -9,15 +9,28 @@ This is a space to learn about UEFI development, specifically diving into the UE
 - `qemu-system-x86_64`
 - `mtools`
 - `parted`
+- `udisks2` *(optional, used for mounting/unmounting the image)*
 
 ## Usage:
 
-Once you have these installed, you can run the following commands:
+Once the requirements are installed, the following commands can be run:
 
 ### `make [run]`:
 
-Builds the BOOTX64.EFI application, creates an image, and runs QEMU with the image and the included OVMF firmware.
+Builds the BOOTX64.EFI application, creates a bootable image, and runs QEMU with the image and the included OVMF firmware.
+
+### `make image`:
+
+Builds the BOOTX64.EFI application and creates a bootable image.
+
+### `make mount`:
+
+Creates a loop device for the image and mounts it onto the local filesystem.  
+
+### `make unmount`:
+
+Unmounts the image and deletes the loop device associated with the image.  
 
 ### `make clean`:
 
-Removes all `make`-generated files.
+Removes all `make`-generated files, and (if mounted) unmounts the boot image.
