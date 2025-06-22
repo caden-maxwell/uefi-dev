@@ -79,7 +79,7 @@ typedef struct EFI_GUID {
     {0x0964e5b22, 0x6459, 0x11d2, 0x8e, 0x39, {0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
 
 #define EFI_FILE_INFO_ID \
-    {0x09576e92, 0x6d3f, 0x11d2, 0x8e39, 0x00, {0xa0, 0xc9, 0x69, 0x72, 0x3b}}
+    {0x09576e92, 0x6d3f, 0x11d2, 0x8e, 0x39, {0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
 
 //******************************************
 // File Attribute Bits
@@ -92,8 +92,6 @@ typedef struct EFI_GUID {
 #define EFI_FILE_DIRECTORY      0x0000000000000010
 #define EFI_FILE_ARCHIVE        0x0000000000000020
 #define EFI_FILE_VALID_ATTR     0x0000000000000037
-
-
 
 // UEFI Spec. Appendix D
 #define HIGH_BIT 0x8000000000000000ULL
@@ -1044,6 +1042,26 @@ EFI_STATUS
     OUT UINT64           *Position
 );
 
+// UEFI Spec 13.5.13
+typedef
+EFI_STATUS
+(EFIAPI *EFI_FILE_GET_INFO) (
+    IN EFI_FILE_PROTOCOL *This,
+    IN EFI_GUID          *InformationType,
+    IN OUT UINTN         *BufferSize,
+    OUT VOID             *Buffer
+);
+
+// UEFI Spec 13.5.14
+typedef
+EFI_STATUS
+(EFIAPI *EFI_FILE_SET_INFO) (
+    IN EFI_FILE_PROTOCOL *This,
+    IN EFI_GUID          *InformationType,
+    IN UINTN             BufferSize,
+    IN VOID              *Buffer
+);
+
 // UEFI Spec 13.5.15
 typedef
 EFI_STATUS
@@ -1073,14 +1091,12 @@ typedef struct EFI_FILE_PROTOCOL {
     EFI_FILE_WRITE        Write;
     EFI_FILE_GET_POSITION GetPosition;
     EFI_FILE_SET_POSITION SetPosition;
-//   EFI_FILE_GET_INFO     GetInfo;
-//   EFI_FILE_SET_INFO     SetInfo;
+    EFI_FILE_GET_INFO     GetInfo;
+    EFI_FILE_SET_INFO     SetInfo;
 //   EFI_FILE_OPEN_EX      OpenEx; // Added for revision 2
 //   EFI_FILE_READ_EX      ReadEx; // Added for revision 2
 //   EFI_FILE_WRITE_EX     WriteEx; // Added for revision 2
 //   EFI_FILE_FLUSH_EX     FlushEx; // Added for revision 2
-    void*                 GetInfo;
-    void*                 SetInfo;
     EFI_FILE_FLUSH        Flush;
     void*                 OpenEx; // Added for revision 2
     void*                 ReadEx; // Added for revision 2
