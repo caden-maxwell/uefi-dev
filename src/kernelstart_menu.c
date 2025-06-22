@@ -1,5 +1,34 @@
 #include "menu.h"
 
+EFI_GUID FileSystemGuid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
+EFI_GUID LoadedImageGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
+EFI_GUID FileInfoGuid = EFI_FILE_INFO_ID;
+
+EFI_STATUS GetFileInfo(IN EFI_FILE_PROTOCOL *File, OUT EFI_FILE_INFO *FileInfo, OUT UINTN *InfoSize)
+{
+    UINTN BufSize = 0;
+    
+    // First call only to get the size of the buffer needed
+    Status = File->GetInfo(File, &FileInfoGuid, &BufSize, NULL);
+    if (Status != EFI_BUFFER_TOO_SMALL)
+        return Status;
+    *InfoSize = BufSize;
+
+    // Second call to actually get file info
+    return File->GetInfo(File, &FileInfoGuid, InfoSize, FileInfo);
+}
+
+EFI_STATUS OpenNewFile(IN EFI_FILE_PROTOCOL *Dir, OUT EFI_FILE_PROTOCOL **NewFile, IN CHAR16 *Path, IN UINT64 Attrs)
+{
+    return Dir->Open(
+        Dir,
+		NewFile,
+		Path,
+        EFI_FILE_MODE_CREATE | EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
+        Attrs
+    );
+}
+
 EFI_STATUS KernelStart(VOID)
 {
     UINTN MemMapSize = 0;
@@ -63,7 +92,6 @@ EFI_STATUS KernelStart(VOID)
             break;
     }
 
-    EFI_GUID LoadedImageGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
     EFI_LOADED_IMAGE_PROTOCOL *LoadedImage = NULL;
     Status = BS->OpenProtocol(
         Image,
@@ -75,7 +103,6 @@ EFI_STATUS KernelStart(VOID)
     );
     if (EFI_ERROR(Status)) return Status;
 
-    EFI_GUID FileSystemGuid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem = NULL;
     Status = BS->OpenProtocol(
         LoadedImage->DeviceHandle,
@@ -101,13 +128,13 @@ EFI_STATUS KernelStart(VOID)
     RootDir->SetPosition(RootDir, 0);
     Printf(u"FILES:\r\n");
     while (TRUE) {
-        // Read to get size of buffer needed
+        // Read to get size of fileinfo needed
         BufSize = 0;
         Status = RootDir->Read(RootDir, &BufSize, NULL);
         if (Status != EFI_BUFFER_TOO_SMALL && Status != EFI_SUCCESS) return Status;
         if (BufSize == 0) break;
 
-        // Allocate memory for buffer on heap
+        // Allocate some memory for fileinfo
         Status = BS->AllocatePool(EfiLoaderData, BufSize, (VOID **)&FileInfo);
         if (EFI_ERROR(Status))
         {
@@ -115,45 +142,51 @@ EFI_STATUS KernelStart(VOID)
             break;
         }
 
-        // Read again to actually get buffer
+        // Read again with correct size to actually get file info
         Status = RootDir->Read(RootDir, &BufSize, FileInfo);
         if (!EFI_ERROR(Status))
         {
+            EFI_FILE_PROTOCOL *File;
+            Status = RootDir->Open(RootDir, &File, FileInfo->FileName, EFI_FILE_MODE_READ, NULL);
+            if (EFI_ERROR(Status))
+            {
+                Printf(u"Failed to open file '%s': ERROR CODE 0x%x\r\n", FileInfo->FileName, Status);
+                continue;
+            }
+
             Printf(
-                u"0x%x %d %d %s\r\n",
+                u"0x%x %d/%d/%d %d:%d:%d %d %s\r\n",
                 FileInfo->Attribute,
-                FileInfo->ModificationTime,
+                FileInfo->CreateTime.Month,
+                FileInfo->CreateTime.Day,
+                FileInfo->CreateTime.Year,
+                FileInfo->CreateTime.Hour,
+                FileInfo->CreateTime.Minute,
+                FileInfo->CreateTime.Second,
                 FileInfo->FileSize,
                 FileInfo->FileName
             );
+
+            // Set archive bit to 0
+            FileInfo->Attribute &= ~EFI_FILE_ARCHIVE;
+            Status = File->SetInfo(File, &FileInfoGuid, BufSize, FileInfo);
+            if (EFI_ERROR(Status))
+               continue;
+
+            File->Flush(File);
+            File->Close(File);
         }
 
         // Free space before trying to get the next file(s) or returning
         BS->FreePool(FileInfo);
     }
 
-
-    EFI_FILE_PROTOCOL *NewFile = NULL;
-    CHAR16 *path = u"NEWFILE";
-    Status = RootDir->Open(
-        RootDir,
-		&NewFile,
-		path,
-		EFI_FILE_MODE_CREATE | EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
-		NULL
-    );
+    EFI_FILE_PROTOCOL *NewFile;
+    CHAR16 *Path = u"NEWDIR";
+    Status = OpenNewFile(RootDir, &NewFile, Path, EFI_FILE_DIRECTORY);
     if (EFI_ERROR(Status))
     {
         Printf(u"Failed to create new file: ERROR CODE 0x%x\r\n", Status);
-        return Status;
-    }
-
-    char Buf[] = "HELLO, WORLD!";
-    UINTN BufLen = ARRAY_LEN(Buf) - 1;
-    Status = NewFile->Write(NewFile, &BufLen, "HELLO, WORLD!");
-    if (EFI_ERROR(Status))
-    {
-        Printf(u"Failed to write to new file: ERROR CODE 0x%x\r\n", Status);
         return Status;
     }
 
