@@ -1,6 +1,8 @@
 SRC_DIR := src
 INC_DIR := include
 BUILD_DIR := build
+MNT_LINK := mnt
+LOOP_FILE := .loopdev.tmp
 
 SOURCES := $(wildcard $(SRC_DIR)/*.c)
 OBJS    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
@@ -34,7 +36,7 @@ CFLAGS = \
 	-ffreestanding \
 	-I$(INC_DIR)
 
-.PHONY: run clean image
+.PHONY: run clean image mount unmount remount
 
 run: $(IMG)
 	@echo "Running QEMU with $<..."
@@ -73,5 +75,14 @@ $(BUILD_DIR):
 
 -include $(DEPENDS)
 
-clean:
-	rm -rf *.log $(BUILD_DIR)
+mount: $(IMG)
+	./mount.sh $(IMG) $(LOOP_FILE) $(MNT_LINK)
+
+unmount:
+	./unmount.sh $(LOOP_FILE)
+	rm -f $(MNT_LINK)
+
+remount: unmount mount
+
+clean: unmount
+	rm -rf *.log *.tmp $(BUILD_DIR)

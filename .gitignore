@@ -1,6 +1,8 @@
 build
+mnt
 *.EFI
 *.img
 *.elf
 *.log
+*.tmp
 .vscode

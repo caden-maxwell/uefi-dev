@@ -96,7 +96,7 @@ EFI_STATUS KernelStart(VOID)
     }
 
     UINTN BufSize = 1024;
-    CHAR16 *TmpBuf;
+    CHAR16 *TmpBuf = NULL;
     Status = RootDir->Read(RootDir, &BufSize, (VOID *)TmpBuf);
     if (EFI_ERROR(Status))
     {
@@ -138,8 +138,9 @@ EFI_STATUS KernelStart(VOID)
         return Status;
     }
 
-    BufSize = 1024;
-    Status = NewFile->Write(NewFile, &BufSize, (VOID *)u"HELLO, WORLD!");
+    char Buf[] = "HELLO, WORLD!";
+    UINTN BufLen = ARRAY_LEN(Buf) - 1;
+    Status = NewFile->Write(NewFile, &BufLen, "HELLO, WORLD!");
     if (EFI_ERROR(Status))
     {
         Printf(u"Failed to write to new file: ERROR CODE 0x%x\r\n", Status);
