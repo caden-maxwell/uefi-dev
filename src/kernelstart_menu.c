@@ -99,24 +99,40 @@ EFI_STATUS KernelStart(VOID)
     EFI_FILE_INFO *FileInfo;
     UINTN BufSize;
     RootDir->SetPosition(RootDir, 0);
-    do {
+    Printf(u"FILES:\r\n");
+    BOOLEAN Done = FALSE;
+    while (!Done) {
         // Read to get size of buffer needed
         BufSize = 0;
-        RootDir->Read(RootDir, &BufSize, NULL);
+        Status = RootDir->Read(RootDir, &BufSize, NULL);
         if (Status != EFI_BUFFER_TOO_SMALL && Status != EFI_SUCCESS) return Status;
+        if (BufSize == 0) break;
 
         // Allocate memory for buffer on heap
-        BS->AllocatePool(EfiLoaderData, BufSize, (VOID **)&FileInfo);
+        Status = BS->AllocatePool(EfiLoaderData, BufSize, (VOID **)&FileInfo);
+        if (EFI_ERROR(Status))
+        {
+            Printf(u"Could not allocate memory for FileInfo!\r\n");
+            break;
+        }
 
         // Read again to actually get buffer
         Status = RootDir->Read(RootDir, &BufSize, FileInfo);
-        if (EFI_ERROR(Status)) return Status;
+        if (!EFI_ERROR(Status))
+        {
+            Printf(
+                u"0x%x %d %d %s\r\n",
+                FileInfo->Attribute,
+                FileInfo->ModificationTime,
+                FileInfo->FileSize,
+                FileInfo->FileName
+            );
+        }
 
-        Printf(u"%s\r\n", FileInfo->FileName);
+        // Free space before trying to get the next file(s) or returning
+        BS->FreePool(FileInfo);
+    }
 
-        // Free space before trying to get the next file(s)
-        BS->FreePool(&FileInfo);
-    } while (BufSize > 0 && !EFI_ERROR(Status));
 
     EFI_FILE_PROTOCOL *NewFile = NULL;
     CHAR16 *path = u"NEWFILE";
@@ -144,6 +160,8 @@ EFI_STATUS KernelStart(VOID)
 
     NewFile->Flush(NewFile);
     NewFile->Close(NewFile);
+    RootDir->Flush(RootDir);
+    RootDir->Close(RootDir);
 
     return EFI_SUCCESS;
 }
