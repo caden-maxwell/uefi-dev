@@ -1028,6 +1028,22 @@ EFI_STATUS
     IN VOID              *Buffer
 );
 
+// UEFI Spec 13.5.11
+typedef
+EFI_STATUS
+(EFIAPI *EFI_FILE_SET_POSITION) (
+    IN EFI_FILE_PROTOCOL *This,
+    IN UINT64            Position
+);
+
+// UEFI Spec 13.5.12
+typedef
+EFI_STATUS
+(EFIAPI *EFI_FILE_GET_POSITION) (
+    IN EFI_FILE_PROTOCOL *This,
+    OUT UINT64           *Position
+);
+
 // UEFI Spec 13.5.15
 typedef
 EFI_STATUS
@@ -1049,29 +1065,27 @@ typedef struct {
 
 // UEFI Spec 13.5.1
 typedef struct EFI_FILE_PROTOCOL {
-    UINT64          Revision;
-    EFI_FILE_OPEN   Open;
-    EFI_FILE_CLOSE  Close;
-    EFI_FILE_DELETE Delete;
-    EFI_FILE_READ   Read;
-    EFI_FILE_WRITE  Write;
-//   EFI_FILE_GET_POSITION GetPosition;
-//   EFI_FILE_SET_POSITION SetPosition;
+    UINT64                Revision;
+    EFI_FILE_OPEN         Open;
+    EFI_FILE_CLOSE        Close;
+    EFI_FILE_DELETE       Delete;
+    EFI_FILE_READ         Read;
+    EFI_FILE_WRITE        Write;
+    EFI_FILE_GET_POSITION GetPosition;
+    EFI_FILE_SET_POSITION SetPosition;
 //   EFI_FILE_GET_INFO     GetInfo;
 //   EFI_FILE_SET_INFO     SetInfo;
 //   EFI_FILE_OPEN_EX      OpenEx; // Added for revision 2
 //   EFI_FILE_READ_EX      ReadEx; // Added for revision 2
 //   EFI_FILE_WRITE_EX     WriteEx; // Added for revision 2
 //   EFI_FILE_FLUSH_EX     FlushEx; // Added for revision 2
-    void*          GetPosition;
-    void*          SetPosition;
-    void*          GetInfo;
-    void*          SetInfo;
-    EFI_FILE_FLUSH Flush;
-    void*          OpenEx; // Added for revision 2
-    void*          ReadEx; // Added for revision 2
-    void*          WriteEx; // Added for revision 2
-    void*          FlushEx; // Added for revision 2
+    void*                 GetInfo;
+    void*                 SetInfo;
+    EFI_FILE_FLUSH        Flush;
+    void*                 OpenEx; // Added for revision 2
+    void*                 ReadEx; // Added for revision 2
+    void*                 WriteEx; // Added for revision 2
+    void*                 FlushEx; // Added for revision 2
 } EFI_FILE_PROTOCOL;
 
 // ---------------------------------------------

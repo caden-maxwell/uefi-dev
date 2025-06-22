@@ -95,33 +95,28 @@ EFI_STATUS KernelStart(VOID)
         return Status;
     }
 
-    UINTN BufSize = 1024;
-    CHAR16 *TmpBuf = NULL;
-    Status = RootDir->Read(RootDir, &BufSize, (VOID *)TmpBuf);
-    if (EFI_ERROR(Status))
-    {
-        Printf(u"Failed to read root: ERROR CODE 0x%x\r\n", Status);
-        return Status;
-    }
-    EFI_FILE_INFO *Info = (EFI_FILE_INFO *)TmpBuf;
-    Printf(
-        u"Attribute: 0x%x\r\n"
-        u"CreateTime: %d\r\n"
-        u"FileName: %s\r\n"
-        u"FileSize: %d\r\n"
-        u"LastAccessTime: %d\r\n"
-        u"ModificationTime: %d\r\n"
-        u"PhysicalSize: %d\r\n"
-        u"Size: %d\r\n\n",
-        Info->Attribute,
-        Info->CreateTime,
-        Info->FileName,
-        Info->FileSize,
-        Info->LastAccessTime,
-        Info->ModificationTime,
-        Info->PhysicalSize,
-        Info->Size
-    );
+    // Print all files in root directory
+    EFI_FILE_INFO *FileInfo;
+    UINTN BufSize;
+    RootDir->SetPosition(RootDir, 0);
+    do {
+        // Read to get size of buffer needed
+        BufSize = 0;
+        RootDir->Read(RootDir, &BufSize, NULL);
+        if (Status != EFI_BUFFER_TOO_SMALL && Status != EFI_SUCCESS) return Status;
+
+        // Allocate memory for buffer on heap
+        BS->AllocatePool(EfiLoaderData, BufSize, (VOID **)&FileInfo);
+
+        // Read again to actually get buffer
+        Status = RootDir->Read(RootDir, &BufSize, FileInfo);
+        if (EFI_ERROR(Status)) return Status;
+
+        Printf(u"%s\r\n", FileInfo->FileName);
+
+        // Free space before trying to get the next file(s)
+        BS->FreePool(&FileInfo);
+    } while (BufSize > 0 && !EFI_ERROR(Status));
 
     EFI_FILE_PROTOCOL *NewFile = NULL;
     CHAR16 *path = u"NEWFILE";
