@@ -100,8 +100,7 @@ EFI_STATUS KernelStart(VOID)
     UINTN BufSize;
     RootDir->SetPosition(RootDir, 0);
     Printf(u"FILES:\r\n");
-    BOOLEAN Done = FALSE;
-    while (!Done) {
+    while (TRUE) {
         // Read to get size of buffer needed
         BufSize = 0;
         Status = RootDir->Read(RootDir, &BufSize, NULL);
