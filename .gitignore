@@ -4,5 +4,4 @@ mnt
 *.img
 *.elf
 *.log
-*.tmp
 .vscode

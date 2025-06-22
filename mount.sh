@@ -1,20 +1,28 @@
 #!/usr/bin/env bash
 
-IMG=$1
-LOOP_FILE=$2
-MNT_LINK=$3
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <image_file> <mount_symlink>"
+    exit 1
+fi
 
-if [ ! -f $LOOP_FILE ]; then
-    echo "Mounting ${IMG} with udisksctl..."
-    udisksctl loop-setup -f $IMG --no-user-interaction | grep -o '/dev/loop[0-9]*' | tee $LOOP_FILE
+IMG="$1"
+MNT_LINK="$2"
 
-    LOOP=$(cat $LOOP_FILE)p1;
-    udisksctl mount -b $LOOP
+# Ensure loop device for this image does not already exist
+LOOP_DEV=$(losetup -j "$IMG" | grep -o '/dev/loop[0-9]*')
+if [ -z "$LOOP_DEV" ]; then
+    echo "Creating loop device for ${IMG} and mounting partition with udisksctl..."
 
-    MNT_PATH=$(lsblk -no MOUNTPOINT $LOOP)
-    ln -vfs $MNT_PATH $MNT_LINK
+    # Setup loop device and mount the first partition
+    PART=$(udisksctl loop-setup -f "$IMG" --no-user-interaction | grep -o '/dev/loop[0-9]*')p1
+    udisksctl mount -b "$PART"
+
+    # Make a symlink to the mount for ease of use
+    echo Setting up symlink...
+    MNT_PATH=$(lsblk -no MOUNTPOINT "$PART")
+    ln -vfs "$MNT_PATH" "$MNT_LINK"
 else
-    LOOP=$(cat $LOOP_FILE)p1;
-    MNT_PATH=$(lsblk -no MOUNTPOINT $LOOP)
-    echo "Loop device already created and mounted at $MNT_PATH"
+    MNT_PATH=$(lsblk -no MOUNTPOINT ${LOOP_DEV}p1)
+    echo "Loop device already setup for $IMG"
+    echo "${LOOP_DEV}p1 mounted at $MNT_PATH"
 fi

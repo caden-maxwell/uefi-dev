@@ -2,7 +2,6 @@ SRC_DIR := src
 INC_DIR := include
 BUILD_DIR := build
 MNT_LINK := mnt
-LOOP_FILE := .loopdev.tmp
 
 SOURCES := $(wildcard $(SRC_DIR)/*.c)
 OBJS    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
@@ -76,11 +75,10 @@ $(BUILD_DIR):
 -include $(DEPENDS)
 
 mount: $(IMG)
-	./mount.sh $(IMG) $(LOOP_FILE) $(MNT_LINK)
+	./mount.sh $(IMG) $(MNT_LINK)
 
 unmount:
-	./unmount.sh $(LOOP_FILE)
-	rm -f $(MNT_LINK)
+	./unmount.sh $(IMG) && rm -f $(MNT_LINK)
 
 remount: unmount mount
 
