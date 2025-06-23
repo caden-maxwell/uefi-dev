@@ -122,6 +122,9 @@ EFI_STATUS KernelStart(VOID)
         return Status;
     }
 
+    BS->CloseProtocol(LoadedImage->DeviceHandle, &FileSystemGuid, Image, NULL);
+    BS->CloseProtocol(Image, &LoadedImageGuid, Image, NULL);
+
     // Print all files in root directory
     EFI_FILE_INFO *FileInfo;
     UINTN BufSize;
