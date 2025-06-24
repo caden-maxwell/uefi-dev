@@ -10,7 +10,7 @@ TARGET  := $(BUILD_DIR)/BOOTX64.EFI
 
 IMG := $(BUILD_DIR)/OS.img
 TMP_PART = /tmp/part.img
-FIRMWARE_BIN = OVMF.fd
+FIRMWARE_BIN = bios64.bin
 QEMU_LOG = qemu.log
 
 #CC = x86_64-w64-mingw32-gcc
