@@ -5,6 +5,12 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+UDISKS2=udisksctl
+if ! command -v "$UDISKS2" &> /dev/null; then
+    echo \'$UDISKS2\' is not installed or is not in PATH. Exiting...
+    exit 1
+fi
+
 IMG="$1"
 
 # Ensure the loop device actually exists for this image
@@ -15,11 +21,11 @@ if [ -n "$LOOP_DEV" ]; then
     # Unmount partition if it is still mounted
     MNT_PATH=$(lsblk -no MOUNTPOINT "$LOOP_DEV"p1)
     if [ -n "$MNT_PATH" ]; then
-        udisksctl unmount -b "$LOOP_DEV"p1
+        "$UDISKS2" unmount -b "$LOOP_DEV"p1
     fi;
     
     # Remove loop device
-    udisksctl loop-delete -b "$LOOP_DEV"
+    "$UDISKS2" loop-delete -b "$LOOP_DEV"
 else
     echo "No loop device is setup for $IMG"
 fi
