@@ -23,7 +23,7 @@ if [ -n "$LOOP_DEV" ]; then
     if [ -n "$MNT_PATH" ]; then
         "$UDISKS2" unmount -b "$LOOP_DEV"p1
     fi;
-    
+
     # Remove loop device
     "$UDISKS2" loop-delete -b "$LOOP_DEV"
 else
